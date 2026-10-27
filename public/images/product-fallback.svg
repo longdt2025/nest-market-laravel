@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="720" viewBox="0 0 600 720">
+  <rect width="600" height="720" fill="#edeae3"/>
+  <circle cx="300" cy="332" r="128" fill="#d8d2c6"/>
+  <path d="M240 300h120l-15 160h-90z" fill="#b4a78e"/>
+  <ellipse cx="300" cy="300" rx="60" ry="16" fill="#c9bea8"/>
+  <path d="M300 270V195m0 38-35-38m35 45 48-53" stroke="#7c876e" stroke-width="11" stroke-linecap="round" fill="none"/>
+  <text x="300" y="608" text-anchor="middle" font-family="Arial,sans-serif" font-size="26" letter-spacing="6" fill="#6d716b">NEST MARKET</text>
+</svg>
