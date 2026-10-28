@@ -1,12 +1,8 @@
 @props(['product'])
-<article class="product-card">
-    <a class="product-image" href="{{ route('shop.show',$product) }}" aria-label="Xem {{ $product->name }}">
-        <img src="{{ $product->image_url }}" alt="{{ $product->name }}" loading="lazy" onerror="this.onerror=null;this.src='{{ asset('images/product-fallback.svg') }}'">
-        @if($product->compare_at_price && $product->compare_at_price > $product->price)<span class="product-tag">Ưu đãi</span>@elseif($product->created_at?->gt(now()->subDays(14)))<span class="product-tag muted">Mới</span>@endif
-        @if($product->stock === 0)<span class="soldout-overlay">Tạm hết hàng</span>@endif
+<article class="product-card furniture-card">
+    <a class="product-image" href="{{ route('shop.show',$product) }}" aria-label="Xem {{ $product->name }}"><img src="{{ $product->image_url }}" alt="{{ $product->name }}" loading="lazy" onerror="this.onerror=null;this.src='{{ asset('images/product-fallback.svg') }}'">@if(count($product->gallery_urls)>1)<img class="card-alternate-image" src="{{ $product->gallery_urls[1] }}" alt="Góc nhìn khác của {{ $product->name }}" loading="lazy">@endif
+        @if($product->discount_percent)<span class="product-tag card-sale">-{{ $product->discount_percent }}%</span>@elseif($product->is_new_arrival)<span class="product-tag card-new">Mới</span>@endif
+        @if($product->stock<1)<span class="soldout-overlay">Tạm hết hàng</span>@endif
     </a>
-    <div class="product-details"><span class="product-category">{{ $product->category->name }}</span><a class="product-name" href="{{ route('shop.show',$product) }}">{{ $product->name }}</a><div class="product-price"><strong>{{ number_format($product->price,0,',','.') }}₫</strong>@if($product->compare_at_price)<del>{{ number_format($product->compare_at_price,0,',','.') }}₫</del>@endif</div></div>
-    <form action="{{ route('cart.store',$product) }}" method="POST" class="quick-add" data-ajax-cart>
-        @csrf <input type="hidden" name="quantity" value="1"><button type="submit" {{ $product->stock < 1 ? 'disabled' : '' }} aria-label="Thêm {{ $product->name }} vào giỏ"><x-icon name="plus" size="19"/></button>
-    </form>
+    <div class="product-details"><span class="product-category">{{ $product->room_label }}</span><a class="product-name" href="{{ route('shop.show',$product) }}">{{ $product->name }}</a><div class="product-price"><strong>{{ number_format($product->price,0,',','.') }}₫</strong>@if($product->discount_percent)<del>{{ number_format($product->compare_at_price,0,',','.') }}₫</del>@endif</div><div class="card-bottom"><span>{{ $product->color ?: $product->material }}</span><form action="{{ route('cart.store',$product) }}" method="POST" data-ajax-cart>@csrf<input type="hidden" name="quantity" value="1"><button type="submit" @disabled($product->stock<1) aria-label="Thêm {{ $product->name }} vào giỏ"><x-icon name="shopping-bag" size="17"/></button></form></div></div>
 </article>

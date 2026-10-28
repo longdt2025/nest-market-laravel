@@ -1,0 +1,46 @@
+<?php
+
+return [
+    'required' => 'Vui lòng nhập :attribute.',
+    'string' => ':Attribute phải là chuỗi ký tự.',
+    'integer' => ':Attribute phải là số nguyên.',
+    'array' => ':Attribute phải là danh sách hợp lệ.',
+    'boolean' => ':Attribute không hợp lệ.',
+    'email' => 'Vui lòng nhập địa chỉ email hợp lệ.',
+    'unique' => ':Attribute đã được sử dụng.',
+    'exists' => ':Attribute không tồn tại hoặc đã bị xóa.',
+    'confirmed' => 'Mật khẩu xác nhận không khớp.',
+    'in' => ':Attribute không hợp lệ.',
+    'uuid' => 'Phiên đặt hàng không hợp lệ. Vui lòng tải lại trang thanh toán.',
+    'image' => 'Tệp tải lên phải là hình ảnh.',
+    'mimes' => ':Attribute chỉ hỗ trợ định dạng :values.',
+    'uploaded' => 'Không tải được :attribute. Vui lòng kiểm tra kích thước tệp và thử lại.',
+    'min' => [
+        'numeric' => ':Attribute phải từ :min trở lên.',
+        'string' => ':Attribute phải có ít nhất :min ký tự.',
+    ],
+    'max' => [
+        'numeric' => ':Attribute không được vượt quá :max.',
+        'string' => ':Attribute không được vượt quá :max ký tự.',
+        'file' => ':Attribute không được vượt quá :max KB.',
+        'array' => ':Attribute chỉ được có tối đa :max mục.',
+    ],
+    'gte' => ['numeric' => ':Attribute phải lớn hơn hoặc bằng :value.'],
+    'password' => [
+        'letters' => 'Mật khẩu phải có ít nhất một chữ cái.',
+        'numbers' => 'Mật khẩu phải có ít nhất một chữ số.',
+    ],
+    'attributes' => [
+        'name' => 'tên', 'email' => 'email', 'password' => 'mật khẩu',
+        'quantity' => 'số lượng', 'recipient_name' => 'họ tên người nhận',
+        'phone' => 'số điện thoại', 'shipping_address' => 'địa chỉ giao hàng', 'note' => 'ghi chú',
+        'checkout_token' => 'mã phiên đặt hàng', 'category_id' => 'danh mục',
+        'price' => 'giá bán', 'compare_at_price' => 'giá gốc', 'stock' => 'tồn kho',
+        'description' => 'mô tả', 'image' => 'ảnh sản phẩm', 'status' => 'trạng thái',
+        'q' => 'từ khóa tìm kiếm', 'category' => 'danh mục',
+        'cancel_reason' => 'lý do hủy đơn', 'delivery_name' => 'tên người nhận mặc định',
+        'material' => 'chất liệu', 'dimensions' => 'kích thước', 'color' => 'màu sắc', 'room' => 'không gian',
+        'warranty_months' => 'thời gian bảo hành', 'care_instructions' => 'hướng dẫn bảo quản',
+        'gallery_images' => 'bộ ảnh sản phẩm', 'min_price' => 'giá tối thiểu', 'max_price' => 'giá tối đa',
+    ],
+];

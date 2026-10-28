@@ -3,6 +3,7 @@ use App\Http\Controllers\ShopController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProvinceController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -13,6 +14,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/',[ShopController::class,'home'])->name('shop.home');
 Route::get('/san-pham',[ShopController::class,'index'])->name('shop.index');
+Route::get('/hang-moi',[ShopController::class,'newArrivals'])->name('shop.new');
+Route::get('/uu-dai',[ShopController::class,'offers'])->name('shop.offers');
+Route::view('/chinh-sach','shop.policies')->name('shop.policies');
 Route::get('/san-pham/{product:slug}',[ShopController::class,'show'])->name('shop.show');
 Route::get('/gio-hang',[CartController::class,'index'])->name('cart.index');
 Route::post('/gio-hang/{product}',[CartController::class,'store'])->name('cart.store');
@@ -27,11 +31,16 @@ Route::middleware('guest')->group(function () {
 });
 Route::post('/dang-xuat',[AuthController::class,'logout'])->middleware('auth')->name('logout');
 Route::middleware(['auth','customer'])->group(function () {
+    Route::get('/tai-khoan',[ProfileController::class,'edit'])->name('profile.edit');
+    Route::patch('/tai-khoan',[ProfileController::class,'update'])->name('profile.update');
     Route::get('/tinh-thanh',[ProvinceController::class,'index'])->name('location.provinces')->middleware('throttle:30,1');
     Route::get('/thanh-toan',[CheckoutController::class,'create'])->name('checkout.create');
     Route::post('/thanh-toan',[CheckoutController::class,'store'])->name('checkout.store')->middleware('throttle:10,1');
     Route::get('/don-hang',[OrderController::class,'index'])->name('orders.index');
     Route::get('/don-hang/{order}',[OrderController::class,'show'])->name('orders.show');
+    Route::get('/don-hang/{order}/nhan-hang',[OrderController::class,'editDelivery'])->name('orders.edit-delivery');
+    Route::patch('/don-hang/{order}/nhan-hang',[OrderController::class,'updateDelivery'])->name('orders.update-delivery');
+    Route::post('/don-hang/{order}/huy',[OrderController::class,'cancel'])->name('orders.cancel')->middleware('throttle:10,1');
 });
 Route::prefix('admin')->name('admin.')->middleware(['auth','admin'])->group(function () {
     Route::get('/',[DashboardController::class,'index'])->name('dashboard');
