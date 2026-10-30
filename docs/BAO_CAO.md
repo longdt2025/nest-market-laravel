@@ -1,10 +1,14 @@
 # Báo cáo kỹ thuật — NEST Market
 
+> Cập nhật 30/10/2026: hệ thống có 3 vai trò. Admin hệ thống ở /admin chỉ quản lý tài khoản và sao lưu/phục hồi MinIO. Các nghiệp vụ bán hàng trước đây mang tên Admin nay thuộc Quản lý cửa hàng ở /quan-ly. Customer giữ luồng mua hàng. Account demo: admin/admin123, manager/Password@123, customer@nest.test/Password@123.
+>
+> Có 9 migration, 6 bảng nghiệp vụ và bảng hệ thống backups. MinIO Console localhost:19001, bucket riêng tư nest-market-backups. Sao lưu dữ liệu/ảnh upload được mã hóa bằng APP_KEY; phục hồi yêu cầu mật khẩu, xác nhận, bản dự phòng và transaction. Menu tài khoản có Đổi mật khẩu, Cập nhật thông tin, Đăng xuất.
+
 Cập nhật theo mã nguồn ngày 28/10/2026. Đây là tài liệu kỹ thuật làm cơ sở cho báo cáo môn học; nhóm cần bổ sung thông tin thành viên, phân công thực tế, bìa theo mẫu trường và ảnh minh chứng trước khi nộp.
 
 ## 1. Đề tài và mục tiêu
 
-NEST Market là website nội thất và đồ trang trí, triển khai đề tài Website Bán hàng Online phiên bản đơn giản. Hai vai trò được lưu trong database là Admin và Customer; Guest là người chưa đăng nhập.
+NEST Market là website nội thất và đồ trang trí, triển khai đề tài Website Bán hàng Online phiên bản đơn giản. Ba vai trò được lưu trong database là Admin, Manager và Customer; Guest là người chưa đăng nhập.
 
 Hệ thống phục vụ luồng chọn sản phẩm → giỏ hàng → đặt COD → xử lý đơn → xem lịch sử. Giao diện tham khảo cách tổ chức nội dung của MOHO, dùng thương hiệu NEST và dữ liệu minh họa cho học tập.
 
@@ -14,9 +18,10 @@ Công nghệ: PHP 8.2+, Laravel 12, Eloquent, Blade, Bootstrap lưu local, CSS, 
 
 | Tác nhân | Phạm vi |
 | --- | --- |
+| Admin hệ thống | Quản lý tài khoản, khóa/mở, phân quyền, sao lưu/phục hồi |
 | Guest | Xem/tìm/lọc/sắp xếp sản phẩm, xem gallery/thông số, tạo giỏ, đăng ký/đăng nhập |
 | Customer | Các thao tác mua hàng, cập nhật hồ sơ, lưu thông tin nhận hàng, xem đơn của mình, sửa/hủy đơn pending |
-| Admin | Dashboard, CRUD danh mục/sản phẩm, upload ảnh, quản lý đơn và chuyển trạng thái |
+| Quản lý cửa hàng | Dashboard, CRUD danh mục/sản phẩm, upload ảnh, quản lý đơn và chuyển trạng thái |
 
 ### Sơ đồ tác nhân và chức năng
 
@@ -33,7 +38,9 @@ flowchart LR
     U --> O[Đặt hàng COD]
     U --> H[Đơn cá nhân và lịch sử]
     U --> E[Sửa nhận hàng / Hủy khi pending]
-    M[Admin] --> D[Dashboard]
+    SADMIN[Admin hệ thống] --> ACC[Quản lý tài khoản và phân quyền]
+    SADMIN --> BK[Sao lưu / Phục hồi MinIO]
+    M[Quản lý cửa hàng] --> D[Dashboard]
     M --> CAT[CRUD danh mục]
     M --> PROD[CRUD sản phẩm và gallery]
     M --> ORD[Xử lý đơn và lịch sử]
@@ -46,13 +53,13 @@ flowchart LR
 - Chi tiết sản phẩm: gallery, thông số, bảo hành/chăm sóc, sản phẩm liên quan.
 - Giỏ và checkout: AJAX, Mua ngay, COD, phí giao hàng, gợi ý tỉnh/thành.
 - Hồ sơ và đơn cá nhân: lưu thông tin nhận hàng, sửa/hủy trước xác nhận, timeline.
-- Admin: danh mục, sản phẩm/ảnh/tồn kho, đơn hàng và dashboard.
+- Quản lý cửa hàng: danh mục, sản phẩm/ảnh/tồn kho, đơn hàng và dashboard.
 
 Số chức năng phụ thuộc cách nhóm thao tác; không dùng số route làm số chức năng nghiệp vụ.
 
 ## 3. Thiết kế dữ liệu
 
-Có 8 migration, 6 bảng nghiệp vụ, bảng password_reset_tokens hỗ trợ và bảng migrations do Laravel quản lý. Bảng password_reset_tokens không đồng nghĩa đã có chức năng quên mật khẩu.
+Có 9 migration, 6 bảng nghiệp vụ, bảng password_reset_tokens hỗ trợ và bảng migrations do Laravel quản lý. Bảng password_reset_tokens không đồng nghĩa đã có chức năng quên mật khẩu.
 
 ### ERD rút gọn
 
@@ -72,6 +79,8 @@ erDiagram
         string email UK
         string password
         string role
+        string username UK
+        boolean is_active
         string delivery_name
         string phone
         text shipping_address
@@ -139,19 +148,19 @@ erDiagram
     }
 ```
 
-order_items giữ tên và đơn giá lúc mua, tránh thay đổi lịch sử khi Admin sửa sản phẩm. Thông tin nhận hàng trên order là bản chụp riêng, không tự thay đổi theo hồ sơ. order_events ghi hành động, trạng thái, người thao tác và thời gian; đơn trước migration chỉ có mốc bắt đầu theo dõi, không suy diễn các bước cũ.
+order_items giữ tên và đơn giá lúc mua, tránh thay đổi lịch sử khi Quản lý cửa hàng sửa sản phẩm. Thông tin nhận hàng trên order là bản chụp riêng, không tự thay đổi theo hồ sơ. order_events ghi hành động, trạng thái, người thao tác và thời gian; đơn trước migration chỉ có mốc bắt đầu theo dõi, không suy diễn các bước cũ.
 
-Seeder mới tạo 2 tài khoản, 5 danh mục và 16 sản phẩm. Không tạo sẵn đơn hàng. Seeder giữ chỉnh sửa trên dữ liệu đã tồn tại; chuyển catalog cũ bằng cách ẩn một số sản phẩm demo cũ, giữ dữ liệu lịch sử.
+Seeder mới tạo 3 tài khoản, 5 danh mục và 16 sản phẩm. Không tạo sẵn đơn hàng. Seeder giữ chỉnh sửa trên dữ liệu đã tồn tại; chuyển catalog cũ bằng cách ẩn một số sản phẩm demo cũ, giữ dữ liệu lịch sử.
 
 ## 4. Kiến trúc
 
 - Route: routes/web.php.
-- Controller: Shop, Auth, Cart, Checkout, Profile, Order, Province và các controller Admin.
+- Controller: Shop, Auth, Cart, Checkout, Profile, Order, Province và các controller Quản lý cửa hàng.
 - Model: User, Category, Product, Order, OrderItem, OrderEvent; quan hệ Eloquent, scopes và accessors.
 - Service: OrderWorkflow điều phối sửa nhận hàng, chuyển trạng thái, hoàn kho và ghi event.
 - Support: Cart chuẩn hóa số lượng Session theo trạng thái/tồn kho thực tế.
-- View: Blade layout storefront/admin, components card/notification/dialog/timeline.
-- Middleware: auth, guest, admin, customer và throttle.
+- View: Blade layout storefront/quan-ly, components card/notification/dialog/timeline.
+- Middleware: auth, guest, admin, manager, customer và throttle.
 - Validation: Form Request và validate ở controller; server kiểm tra dữ liệu độc lập với JavaScript.
 - Upload: public disk; Docker Nginx đọc shared storage volume, chạy trực tiếp dùng storage:link.
 
@@ -191,11 +200,11 @@ Phí giao hàng 30.000đ, miễn phí từ 800.000đ tiền hàng. Mỗi sản p
 ```mermaid
 stateDiagram-v2
     [*] --> pending
-    pending --> confirmed: Admin xác nhận
-    pending --> cancelled: Customer hoặc Admin hủy
-    confirmed --> shipping: Admin giao hàng
-    confirmed --> cancelled: Admin hủy
-    shipping --> delivered: Admin hoàn tất
+    pending --> confirmed: Quản lý cửa hàng xác nhận
+    pending --> cancelled: Customer hoặc Quản lý cửa hàng hủy
+    confirmed --> shipping: Quản lý cửa hàng giao hàng
+    confirmed --> cancelled: Quản lý cửa hàng hủy
+    shipping --> delivered: Quản lý cửa hàng hoàn tất
 ```
 
 Customer chỉ sửa thông tin/hủy khi pending; hủy cần lý do. OrderWorkflow khóa và đọc lại đơn từ database, kiểm tra chuyển trạng thái, hoàn tồn và lưu event trong transaction. Hủy lặp không được hoàn tồn thêm lần nữa.
@@ -215,13 +224,13 @@ Lệnh chạy, kết quả và phạm vi xác nhận: [VERIFICATION.md](VERIFICA
 
 Docker lưu database và uploads trong named volumes. Khi đổi máy cần chạy script setup; database demo cá nhân không được đóng gói trong Git. PHPunit dùng SQLite :memory:, không dùng database MySQL demo.
 
-Ảnh minh chứng nên chụp: trang chủ; bộ lọc; gallery/thông số; giỏ AJAX; checkout; hồ sơ; đơn/timeline; hộp thoại hủy; dashboard; form gallery Admin; phân quyền 403; mobile và kết quả test. Không ghi đã kiểm tra thiết bị/kích thước chưa thực sự kiểm tra.
+Ảnh minh chứng nên chụp: trang chủ; bộ lọc; gallery/thông số; giỏ AJAX; checkout; hồ sơ; đơn/timeline; hộp thoại hủy; dashboard; form gallery Quản lý cửa hàng; phân quyền 403; mobile và kết quả test. Không ghi đã kiểm tra thiết bị/kích thước chưa thực sự kiểm tra.
 
 ## 8. Giới hạn và hướng phát triển
 
 COD mô phỏng; chưa có ví/thẻ, voucher, đánh giá, biến thể SKU, nhiều kho, đồng bộ giỏ giữa thiết bị, quy trình đổi trả/hoàn tiền tự động. Dữ liệu giá/thông số và ảnh là minh họa đồ án. Báo cáo không khẳng định hệ thống sẵn sàng production hay được trọn điểm.
 
-Nhóm bổ sung phân công đúng thực tế, ảnh màn hình và biểu đồ UML theo yêu cầu giảng viên, diễn tập luồng Customer → Admin và giải thích code từng phần.
+Nhóm bổ sung phân công đúng thực tế, ảnh màn hình và biểu đồ UML theo yêu cầu giảng viên, diễn tập luồng Customer → Quản lý cửa hàng và giải thích code từng phần.
 
 ## 9. Câu hỏi bảo vệ
 

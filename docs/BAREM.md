@@ -1,17 +1,21 @@
 # Đối chiếu barem — Website bán hàng online
 
+> Cập nhật 30/10/2026: hệ thống có 3 vai trò. Admin hệ thống ở /admin chỉ quản lý tài khoản và sao lưu/phục hồi MinIO. Các nghiệp vụ bán hàng trước đây mang tên Admin nay thuộc Quản lý cửa hàng ở /quan-ly. Customer giữ luồng mua hàng. Account demo: admin/admin123, manager/Password@123, customer@nest.test/Password@123.
+>
+> Có 9 migration, 6 bảng nghiệp vụ và bảng hệ thống backups. MinIO Console localhost:19001, bucket riêng tư nest-market-backups. Sao lưu dữ liệu/ảnh upload được mã hóa bằng APP_KEY; phục hồi yêu cầu mật khẩu, xác nhận, bản dự phòng và transaction. Menu tài khoản có Đổi mật khẩu, Cập nhật thông tin, Đăng xuất.
+
 Cập nhật theo code ngày 28/10/2026. Bảng này chỉ ra minh chứng và cách demo; điểm thực tế do giảng viên đánh giá.
 
 | Tiêu chí | Điểm tối đa | Minh chứng trong code | Trình diễn |
 | --- | ---: | --- | --- |
-| CRUD ít nhất 2 bảng liên quan | 1,5 | Admin CategoryController/ProductController, FK category_id | Thêm/sửa/xóa danh mục và sản phẩm; chặn xóa danh mục đang dùng |
-| Đăng nhập/đăng xuất, phân quyền | 1,0 | AuthController, EnsureAdmin/EnsureCustomer, routes/web.php | Guest cần đăng nhập; Customer vào Admin nhận 403 |
-| Tìm kiếm, phân trang | 1,0 | ShopController, Admin controllers, paginate/withQueryString | Tìm tên, kết hợp bộ lọc, đổi trang giữ điều kiện |
+| CRUD ít nhất 2 bảng liên quan | 1,5 | Quản lý cửa hàng CategoryController/ProductController, FK category_id | Thêm/sửa/xóa danh mục và sản phẩm; chặn xóa danh mục đang dùng |
+| Đăng nhập/đăng xuất, phân quyền | 1,0 | AuthController, EnsureManager/EnsureCustomer, routes/web.php | Guest cần đăng nhập; Customer vào Quản lý cửa hàng nhận 403 |
+| Tìm kiếm, phân trang | 1,0 | ShopController, Quản lý cửa hàng controllers, paginate/withQueryString | Tìm tên, kết hợp bộ lọc, đổi trang giữ điều kiện |
 | Validation form | 0,5 | Form Requests, validate trong controllers | Sai giá/stock/email/địa chỉ/loại ảnh bị từ chối |
 | Eloquent ORM | 1,0 | 6 model nghiệp vụ, scopes, relationships, eager loading | Giải thích truy vấn và quan hệ từ Controller/Service |
-| Migration và Seeder | 1,0 | 8 migration, DatabaseSeeder, FurnitureCatalogSeeder | migrate:status; DB mới có 2 tài khoản, 5 danh mục, 16 sản phẩm |
+| Migration và Seeder | 1,0 | 9 migration, DatabaseSeeder, FurnitureCatalogSeeder | migrate:status; DB mới có 3 tài khoản, 5 danh mục, 16 sản phẩm |
 | Controller, Middleware, Blade | 0,5 | Controllers, Middleware, resources/views và OrderWorkflow | Mô tả request → kiểm tra quyền → nghiệp vụ → dữ liệu → view |
-| UI Bootstrap/Tailwind | 1,0 | Bootstrap 5.3.3 lưu local, app.css/storefront.css | Cửa hàng, checkout và Admin |
+| UI Bootstrap/Tailwind | 1,0 | Bootstrap 5.3.3 lưu local, app.css/storefront.css | Cửa hàng, checkout và Quản lý cửa hàng |
 | Responsive | 0,5 | Grid/media queries trong CSS | Kiểm tra desktop/tablet/điện thoại và các form |
 | Báo cáo, ERD, Use Case, ảnh | 0,5 | BAO_CAO.md có ERD/luồng/tác nhân | Bổ sung báo cáo theo mẫu, UML và ảnh chụp thật |
 | Thuyết trình/vấn đáp | 0,5 | Câu hỏi và demo trong BAO_CAO/KIEM_THU | Thành viên giải thích phần mình làm |

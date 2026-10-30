@@ -21,6 +21,11 @@ x-laravel: &laravel
     CACHE_STORE: file
     QUEUE_CONNECTION: sync
     FILESYSTEM_DISK: public
+    MINIO_ENDPOINT: http://minio:9000
+    MINIO_ACCESS_KEY: ${MINIO_ROOT_USER:-nest_minio_admin}
+    MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-nest_minio_local_password}
+    MINIO_BUCKET: ${MINIO_BUCKET:-nest-market-backups}
+    BACKUP_DISK: minio
   volumes:
     - .:/var/www/html
     - vendor_data:/var/www/html/vendor
@@ -77,6 +82,27 @@ services:
       timeout: 5s
       retries: 30
 
+  minio:
+    image: nest-market-minio:2025-04-22
+    build:
+      context: .
+      dockerfile: docker/minio/Dockerfile
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-nest_minio_admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-nest_minio_local_password}
+    ports:
+      - "127.0.0.1:${MINIO_API_PORT:-19000}:9000"
+      - "127.0.0.1:${MINIO_CONSOLE_PORT:-19001}:9001"
+    volumes:
+      - minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 20s
+
   setup:
     <<: *laravel
     profiles: ["tools"]
@@ -87,3 +113,4 @@ volumes:
   vendor_data:
   storage_data:
   bootstrap_cache:
+  minio_data:

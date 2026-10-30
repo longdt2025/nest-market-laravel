@@ -46,7 +46,7 @@ class ProductController extends Controller
             throw $exception;
         }
 
-        return redirect()->route('admin.products.index')->with('success', 'Đã thêm sản phẩm.');
+        return redirect()->route('manager.products.index')->with('success', 'Đã thêm sản phẩm.');
     }
 
     public function update(ProductRequest $request, Product $product): RedirectResponse
@@ -66,7 +66,7 @@ class ProductController extends Controller
         }
         $this->deleteImages($obsolete);
 
-        return redirect()->route('admin.products.index')->with('success', 'Đã cập nhật sản phẩm.');
+        return redirect()->route('manager.products.index')->with('success', 'Đã cập nhật sản phẩm.');
     }
 
     public function destroy(Product $product): RedirectResponse

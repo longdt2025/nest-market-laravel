@@ -19,7 +19,7 @@ if (! config('app.key')) {
 Artisan::call('config:clear');
 echo Artisan::output();
 
-// The current seeder overwrites stock/passwords; only seed a new database.
+// Only initialize sample data automatically for a new database.
 $newDatabase = ! Schema::hasTable('users')
     && ! Schema::hasTable('products')
     && ! Schema::hasTable('orders');

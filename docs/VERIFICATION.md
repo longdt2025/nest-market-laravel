@@ -1,5 +1,19 @@
 # Kết quả kiểm chứng
 
+## Bản cập nhật workspace — 30/10/2026
+
+- PHPUnit: **64 test / 397 assertions đều qua**, SQLite :memory:.
+- Đã thử quyền đọc/ghi riêng Admin/Manager, tài khoản khóa và phiên đang hoạt động, hồ sơ/mật khẩu, báo cáo theo khoảng ngày.
+- Kiểm thử backup roundtrip gồm dữ liệu/ảnh, checksum bị sửa, MinIO lỗi, mật khẩu/xác nhận sai và rollback phục hồi lỗi.
+- Kiểm tra riêng **MySQL thật + MinIO thật**: backup → sửa tồn → restore khôi phục đúng dữ liệu/ảnh; trigger gây lỗi restore xác nhận rollback. Database thử nghiệm và object backup thử đã được dọn.
+- Endpoint S3 không kết nối được: không tạo bản ghi thành công, dữ liệu hiện tại giữ nguyên.
+- Website HTTP 200; truy cập bucket ẩn danh HTTP 403; 4 container healthy; 9 migration đã áp dụng.
+- UI Admin: login, menu tài khoản theo mẫu, danh sách tài khoản, tạo backup thật #1 và đọc lại checksum/cấu trúc hợp lệ.
+- UI Manager: login, dashboard, lọc trạng thái đơn, menu mobile; bảng cuộn riêng không tràn trang trong khung hẹp. Chưa khẳng định thử thiết bị điện thoại thật.
+- JavaScript workspace qua node --check; Blade view:cache và nginx -t thành công.
+- Không thực hiện phục hồi trên database demo đang dùng. Lần kiểm tra MySQL/MinIO sử dụng database riêng.
+
+## Ghi nhận trước khi tách vai trò
 Cập nhật ngày **28/10/2026** (Asia/Saigon), theo source hiện tại. Đây là ghi nhận kiểm tra, không phải cam kết mọi lỗi đều đã hết.
 
 ## Đã chạy lại khi cập nhật tài liệu

@@ -15,7 +15,7 @@ class OrderWorkflow
     {
         DB::transaction(function () use ($order, $status, $actor, $reason) {
             $locked = Order::query()->lockForUpdate()->findOrFail($order->id);
-            if (! $actor->isAdmin()) {
+            if (! $actor->isManager()) {
                 abort_unless((int) $locked->user_id === (int) $actor->id, 403);
                 if ($status !== 'cancelled' || $locked->status !== 'pending') {
                     throw ValidationException::withMessages(['order' => 'Bạn chỉ có thể hủy đơn đang chờ xác nhận.']);

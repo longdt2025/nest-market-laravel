@@ -9,10 +9,10 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        foreach ([['admin@nest.test', 'Nguyễn Minh (Admin)', 'admin'], ['customer@nest.test', 'Khách hàng Demo', 'customer']] as [$email,$name,$role]) {
+        foreach ([['admin@nest.test', 'Nguyễn Minh (Admin)', 'admin'], ['manager@nest.test', 'Quản lý NEST', 'manager'], ['customer@nest.test', 'Khách hàng Demo', 'customer']] as [$email,$name,$role]) {
             $user = User::firstOrNew(['email' => $email]);
             if (! $user->exists) {
-                $user->forceFill(['name' => $name, 'password' => bcrypt('Password@123'), 'role' => $role])->save();
+                $user->forceFill(['name' => $name, 'password' => bcrypt($role === 'admin' ? 'admin123' : 'Password@123'), 'role' => $role, 'username' => in_array($role, ['admin', 'manager']) ? $role : null])->save();
             }
         }
         $this->call(FurnitureCatalogSeeder::class);

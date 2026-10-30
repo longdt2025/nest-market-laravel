@@ -16,11 +16,12 @@ try {
 
     Invoke-Docker compose config --quiet
     if (-not $SkipBuild) {
-        Invoke-Docker compose build app
+        Invoke-Docker compose build app minio
     }
 
-    Invoke-Docker compose up -d --wait mysql
+    Invoke-Docker compose up -d --wait mysql minio
     Invoke-Docker compose run --rm setup
+    Invoke-Docker compose run --rm app php artisan nest:storage-init
     Invoke-Docker compose up -d --wait app nginx
     Invoke-Docker compose ps
     Write-Host 'NEST Market is ready. Default URL: http://localhost:8082 (DOCKER_APP_URL in .env).'

@@ -62,12 +62,12 @@ class FurnitureStorefrontTest extends TestCase
     public function test_admin_can_upload_and_replace_a_gallery_without_losing_its_cover(): void
     {
         Storage::fake('public');
-        $this->actingAs(User::where('email', 'admin@nest.test')->firstOrFail());
+        $this->actingAs(User::where('email', 'manager@nest.test')->firstOrFail());
         $product = Product::firstOrFail();
         $data = ['name' => $product->name, 'category_id' => $product->category_id, 'price' => $product->price, 'stock' => $product->stock, 'is_active' => 1,
             'image' => UploadedFile::fake()->image('cover.png'), 'gallery_images' => [UploadedFile::fake()->image('one.png'), UploadedFile::fake()->image('two.png')],
             'room' => 'decor', 'dimensions' => '20 × 20 × 30 cm', 'material' => 'Gốm sứ', 'color' => 'Kem', 'warranty_months' => 12];
-        $this->put(route('admin.products.update', $product), $data)->assertSessionHasNoErrors();
+        $this->put(route('manager.products.update', $product), $data)->assertSessionHasNoErrors();
         $product->refresh();
         $cover = $product->image_path;
         $oldGallery = $product->gallery;
@@ -75,7 +75,7 @@ class FurnitureStorefrontTest extends TestCase
         Storage::disk('public')->assertExists([$cover, ...$oldGallery]);
         unset($data['image']);
         $data['gallery_images'] = [UploadedFile::fake()->image('new.png')];
-        $this->put(route('admin.products.update', $product), $data)->assertSessionHasNoErrors();
+        $this->put(route('manager.products.update', $product), $data)->assertSessionHasNoErrors();
         $this->assertSame($cover, $product->fresh()->image_path);
         Storage::disk('public')->assertMissing($oldGallery);
         Storage::disk('public')->assertExists([$cover, ...$product->fresh()->gallery]);
@@ -87,12 +87,12 @@ class FurnitureStorefrontTest extends TestCase
         $product = Product::firstOrFail();
         Storage::disk('public')->put('products/old.png', 'old');
         $product->update(['gallery' => ['products/old.png']]);
-        $this->actingAs(User::where('email', 'admin@nest.test')->firstOrFail());
+        $this->actingAs(User::where('email', 'manager@nest.test')->firstOrFail());
         Event::listen('eloquent.updating: '.Product::class, fn () => throw new \RuntimeException('Gallery transaction failed'));
         $this->withoutExceptionHandling();
         $caught = false;
         try {
-            $this->put(route('admin.products.update', $product), ['name' => $product->name, 'category_id' => $product->category_id, 'price' => $product->price, 'stock' => $product->stock,
+            $this->put(route('manager.products.update', $product), ['name' => $product->name, 'category_id' => $product->category_id, 'price' => $product->price, 'stock' => $product->stock,
                 'is_active' => 1, 'gallery_images' => [UploadedFile::fake()->image('new.png')]]);
         } catch (\RuntimeException $e) {
             $caught = true;
@@ -112,7 +112,7 @@ class FurnitureStorefrontTest extends TestCase
         $this->assertSame($before, $product->fresh()->getAttributes());
         $sharedImage = public_path('images/'.$product->image_path);
         $this->assertFileExists($sharedImage);
-        $this->actingAs(User::where('email', 'admin@nest.test')->firstOrFail())->delete(route('admin.products.destroy', $product))->assertRedirect();
+        $this->actingAs(User::where('email', 'manager@nest.test')->firstOrFail())->delete(route('manager.products.destroy', $product))->assertRedirect();
         $this->assertFileExists($sharedImage);
     }
 }

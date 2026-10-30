@@ -29,7 +29,7 @@ class CustomerSelfServiceTest extends TestCase
         parent::setUp();
         $this->seed(DatabaseSeeder::class);
         $this->customer = User::where('email', 'customer@nest.test')->firstOrFail();
-        $this->admin = User::where('email', 'admin@nest.test')->firstOrFail();
+        $this->admin = User::where('email', 'manager@nest.test')->firstOrFail();
         $this->product = Product::firstOrFail();
     }
 
@@ -86,7 +86,7 @@ class CustomerSelfServiceTest extends TestCase
         $this->post(route('orders.cancel', $order), ['cancel_reason' => 'Gửi lại yêu cầu'])->assertSessionHasErrors('order');
         $this->assertSame($stock, $this->product->fresh()->stock);
         $this->assertSame(2, $order->events()->count());
-        $this->actingAs($this->admin)->get(route('admin.orders.show', $order))
+        $this->actingAs($this->admin)->get(route('manager.orders.show', $order))
             ->assertSee('Muốn đổi sang sản phẩm khác')->assertSee('Khách hàng');
     }
 
@@ -113,7 +113,7 @@ class CustomerSelfServiceTest extends TestCase
     public function test_admin_confirmation_prevents_later_customer_changes(): void
     {
         $order = $this->placeOrder();
-        $this->actingAs($this->admin)->patch(route('admin.orders.update', $order), ['status' => 'confirmed'])->assertSessionHasNoErrors();
+        $this->actingAs($this->admin)->patch(route('manager.orders.update', $order), ['status' => 'confirmed'])->assertSessionHasNoErrors();
         $this->actingAs($this->customer)->get(route('orders.edit-delivery', $order))->assertRedirect(route('orders.show', $order));
         $this->patch(route('orders.update-delivery', $order), $this->delivery(['recipient_name' => 'Late change']))->assertSessionHasErrors('order');
         $this->post(route('orders.cancel', $order), ['cancel_reason' => 'Late cancellation'])->assertSessionHasErrors('order');
@@ -144,11 +144,11 @@ class CustomerSelfServiceTest extends TestCase
         $this->actingAs($this->admin);
         foreach (['confirmed', 'shipping', 'delivered'] as $status) {
             $this->travel(1)->minutes();
-            $this->patch(route('admin.orders.update', $order), ['status' => $status])->assertSessionHasNoErrors();
+            $this->patch(route('manager.orders.update', $order), ['status' => $status])->assertSessionHasNoErrors();
         }
         $events = $order->events()->get();
         $this->assertSame(['pending', 'confirmed', 'shipping', 'delivered'], $events->pluck('status')->all());
-        $this->assertSame(['customer', 'admin', 'admin', 'admin'], $events->pluck('actor_role')->all());
+        $this->assertSame(['customer', 'manager', 'manager', 'manager'], $events->pluck('actor_role')->all());
         $this->assertTrue($events[3]->created_at->gt($events[0]->created_at));
         $this->actingAs($this->customer)->get(route('orders.show', $order))->assertSee('Đã giao')->assertDontSee('Sửa thông tin nhận hàng');
     }

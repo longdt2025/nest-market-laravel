@@ -21,6 +21,17 @@ class AccessAndDemoTest extends TestCase
         $this->seed(DatabaseSeeder::class);
     }
 
+    public function test_admin_can_sign_in_with_admin_username_and_new_demo_password(): void
+    {
+        $this->post(route('login.submit'), ['email' => 'admin', 'password' => 'admin123'])
+            ->assertRedirect(route('system.dashboard'));
+        $this->assertAuthenticatedAs(User::where('email', 'admin@nest.test')->firstOrFail());
+        $this->post(route('logout'));
+        $this->post(route('login.submit'), ['email' => 'admin', 'password' => 'Password@123'])
+            ->assertSessionHasErrors('email');
+        $this->assertGuest();
+    }
+
     public function test_registration_cannot_escalate_role_and_customer_can_log_back_in(): void
     {
         $data = ['name' => 'Khách mới', 'email' => 'new@nest.test', 'password' => 'Password123',
@@ -43,16 +54,16 @@ class AccessAndDemoTest extends TestCase
         $this->actingAs(User::where('email', 'customer@nest.test')->firstOrFail());
         $product = Product::firstOrFail();
         $category = Category::firstOrFail();
-        foreach (['admin.dashboard', 'admin.products.index', 'admin.products.create', 'admin.categories.index', 'admin.orders.index'] as $name) {
+        foreach (['manager.dashboard', 'manager.products.index', 'manager.products.create', 'manager.categories.index', 'manager.orders.index'] as $name) {
             $this->get(route($name))->assertForbidden();
         }
-        $this->get(route('admin.products.edit', $product))->assertForbidden();
-        $this->post(route('admin.products.store'), [])->assertForbidden();
-        $this->put(route('admin.products.update', $product), [])->assertForbidden();
-        $this->delete(route('admin.products.destroy', $product))->assertForbidden();
-        $this->post(route('admin.categories.store'), [])->assertForbidden();
-        $this->put(route('admin.categories.update', $category), [])->assertForbidden();
-        $this->delete(route('admin.categories.destroy', $category))->assertForbidden();
+        $this->get(route('manager.products.edit', $product))->assertForbidden();
+        $this->post(route('manager.products.store'), [])->assertForbidden();
+        $this->put(route('manager.products.update', $product), [])->assertForbidden();
+        $this->delete(route('manager.products.destroy', $product))->assertForbidden();
+        $this->post(route('manager.categories.store'), [])->assertForbidden();
+        $this->put(route('manager.categories.update', $category), [])->assertForbidden();
+        $this->delete(route('manager.categories.destroy', $category))->assertForbidden();
     }
 
     public function test_guest_must_sign_in_and_admin_cannot_use_customer_checkout(): void
@@ -61,7 +72,7 @@ class AccessAndDemoTest extends TestCase
             $this->get(route($name))->assertRedirect(route('login'));
         }
         $this->post(route('checkout.store'), [])->assertRedirect(route('login'));
-        $this->actingAs(User::where('email', 'admin@nest.test')->firstOrFail());
+        $this->actingAs(User::where('email', 'manager@nest.test')->firstOrFail());
         $this->get(route('checkout.create'))->assertForbidden();
         $this->post(route('checkout.store'), [])->assertForbidden();
         $this->get(route('orders.index'))->assertForbidden();
@@ -69,7 +80,7 @@ class AccessAndDemoTest extends TestCase
 
     public function test_cancel_restocks_once_and_invalid_status_changes_are_rejected(): void
     {
-        $admin = User::where('email', 'admin@nest.test')->firstOrFail();
+        $admin = User::where('email', 'manager@nest.test')->firstOrFail();
         $customer = User::where('email', 'customer@nest.test')->firstOrFail();
         $product = Product::firstOrFail();
         $stock = $product->stock;
@@ -79,16 +90,16 @@ class AccessAndDemoTest extends TestCase
         $order = Order::firstOrFail();
         $this->get(route('orders.index'))->assertSee($order->code);
         $this->get(route('orders.show', $order))->assertOk();
-        $this->get(route('admin.orders.show', $order))->assertForbidden();
-        $this->patch(route('admin.orders.update', $order), ['status' => 'cancelled'])->assertForbidden();
+        $this->get(route('manager.orders.show', $order))->assertForbidden();
+        $this->patch(route('manager.orders.update', $order), ['status' => 'cancelled'])->assertForbidden();
         $this->actingAs($admin);
-        $this->patch(route('admin.orders.update', $order), ['status' => 'delivered'])->assertSessionHasErrors('status');
+        $this->patch(route('manager.orders.update', $order), ['status' => 'delivered'])->assertSessionHasErrors('status');
         $this->assertSame($stock - 2, $product->fresh()->stock);
-        $this->patch(route('admin.orders.update', $order), ['status' => 'cancelled'])->assertRedirect();
+        $this->patch(route('manager.orders.update', $order), ['status' => 'cancelled'])->assertRedirect();
         $this->assertSame($stock, $product->fresh()->stock);
-        $this->patch(route('admin.orders.update', $order), ['status' => 'cancelled'])->assertSessionHasErrors('status');
+        $this->patch(route('manager.orders.update', $order), ['status' => 'cancelled'])->assertSessionHasErrors('status');
         $this->assertSame($stock, $product->fresh()->stock);
-        $this->delete(route('admin.products.destroy', $product))->assertRedirect();
+        $this->delete(route('manager.products.destroy', $product))->assertRedirect();
         $this->assertDatabaseHas('products', ['id' => $product->id, 'is_active' => false]);
         $this->assertDatabaseHas('order_items', ['order_id' => $order->id, 'product_name' => $product->name]);
     }
@@ -104,7 +115,7 @@ class AccessAndDemoTest extends TestCase
         $snapshots = [$user->fresh()->getAttributes(), $product->fresh()->getAttributes(), $category->fresh()->getAttributes()];
         $this->seed(DatabaseSeeder::class);
         $this->assertSame($snapshots, [$user->fresh()->getAttributes(), $product->fresh()->getAttributes(), $category->fresh()->getAttributes()]);
-        $this->assertDatabaseCount('users', 2);
+        $this->assertDatabaseCount('users', 3);
         $this->assertDatabaseCount('products', 16);
         $this->assertDatabaseCount('categories', 5);
     }
@@ -114,8 +125,8 @@ class AccessAndDemoTest extends TestCase
         $this->get(route('shop.home'))->assertOk()->assertSee('/vendor/bootstrap/bootstrap.min.css')
             ->assertSee('/vendor/fonts/inter/inter.css')->assertDontSee('https://cdn.jsdelivr.net')
             ->assertDontSee('https://fonts.googleapis.com')->assertDontSee('https://images.unsplash.com');
-        $this->actingAs(User::where('email', 'admin@nest.test')->firstOrFail())
-            ->get(route('admin.products.index'))->assertOk()->assertSee('/vendor/bootstrap/bootstrap.min.css')
+        $this->actingAs(User::where('email', 'manager@nest.test')->firstOrFail())
+            ->get(route('manager.products.index'))->assertOk()->assertSee('/vendor/bootstrap/bootstrap.min.css')
             ->assertDontSee('https://images.unsplash.com');
     }
 }

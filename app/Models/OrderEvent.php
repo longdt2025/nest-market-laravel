@@ -29,6 +29,7 @@ class OrderEvent extends Model
         return match ($this->actor_role) {
             'customer' => 'Khách hàng',
             'admin' => 'Cửa hàng',
+            'manager' => 'Quản lý cửa hàng',
             default => 'Hệ thống',
         };
     }

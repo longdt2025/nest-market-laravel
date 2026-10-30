@@ -42,11 +42,33 @@ Route::middleware(['auth','customer'])->group(function () {
     Route::patch('/don-hang/{order}/nhan-hang',[OrderController::class,'updateDelivery'])->name('orders.update-delivery');
     Route::post('/don-hang/{order}/huy',[OrderController::class,'cancel'])->name('orders.cancel')->middleware('throttle:10,1');
 });
-Route::prefix('admin')->name('admin.')->middleware(['auth','admin'])->group(function () {
+Route::prefix('quan-ly')->name('manager.')->middleware(['auth','manager'])->group(function () {
     Route::get('/',[DashboardController::class,'index'])->name('dashboard');
     Route::resource('categories',AdminCategoryController::class)->except('show');
     Route::resource('products',AdminProductController::class)->except('show');
     Route::get('orders',[AdminOrderController::class,'index'])->name('orders.index');
     Route::get('orders/{order}',[AdminOrderController::class,'show'])->name('orders.show');
     Route::patch('orders/{order}/status',[AdminOrderController::class,'update'])->name('orders.update');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/workspace/tai-khoan', [\App\Http\Controllers\StaffAccountController::class,'edit'])->name('staff.account');
+    Route::patch('/workspace/tai-khoan', [\App\Http\Controllers\StaffAccountController::class,'update'])->name('staff.account.update');
+    Route::post('/workspace/mat-khau', [\App\Http\Controllers\StaffAccountController::class,'password'])->name('staff.password')->middleware('throttle:5,1');
+});
+Route::prefix('admin')->name('system.')->middleware(['auth','admin'])->group(function () {
+    Route::get('/', function () {
+        return view('system.dashboard', [
+            'accountCount'=>\App\Models\User::count(),
+            'managerCount'=>\App\Models\User::where('role','manager')->count(),
+            'lockedCount'=>\App\Models\User::where('is_active',false)->count(),
+            'latestBackup'=>\App\Models\Backup::latest()->first(),
+        ]);
+    })->name('dashboard');
+    Route::resource('accounts', \App\Http\Controllers\Admin\AccountController::class)->except(['show','destroy']);
+    Route::get('backups',[\App\Http\Controllers\Admin\BackupController::class,'index'])->name('backups.index');
+    Route::post('backups',[\App\Http\Controllers\Admin\BackupController::class,'store'])->name('backups.store')->middleware('throttle:5,1');
+    Route::get('backups/{backup}',[\App\Http\Controllers\Admin\BackupController::class,'show'])->name('backups.show');
+    Route::get('backups/{backup}/download',[\App\Http\Controllers\Admin\BackupController::class,'download'])->name('backups.download');
+    Route::post('backups/{backup}/restore',[\App\Http\Controllers\Admin\BackupController::class,'restore'])->name('backups.restore')->middleware('throttle:3,1');
 });

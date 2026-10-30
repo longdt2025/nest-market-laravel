@@ -31,3 +31,15 @@ Artisan::command('nest:localize-images', function () {
     }
     $this->info("Đã lưu $saved ảnh. Bỏ qua $failed ảnh. Hãy chạy php artisan storage:link.");
 })->purpose('Tải ảnh demo Unsplash về local để mở web không cần mạng sau khi setup');
+
+Artisan::command('nest:storage-init', function () {
+    $disk = config('filesystems.disks.minio');
+    $client = new \Aws\S3\S3Client([
+        'version'=>'latest','region'=>$disk['region'],'endpoint'=>$disk['endpoint'],
+        'use_path_style_endpoint'=>true,
+        'credentials'=>['key'=>$disk['key'],'secret'=>$disk['secret']],
+        'http'=>['connect_timeout'=>3,'timeout'=>15],
+    ]);
+    if (!$client->doesBucketExistV2($disk['bucket'])) $client->createBucket(['Bucket'=>$disk['bucket']]);
+    $this->info('Private MinIO bucket ready: '.$disk['bucket']);
+})->purpose('Create the private MinIO backup bucket if missing');

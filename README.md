@@ -1,6 +1,6 @@
 # NEST Market — Website nội thất Laravel
 
-Đồ án môn PHP: website bán nội thất và đồ trang trí, gồm hai vai trò **Customer** và **Admin**. Giao diện NEST tham khảo cách bố trí của MOHO, dùng nội dung và giá minh họa phục vụ học tập. Thanh toán COD mô phỏng, không phát sinh giao dịch thương mại thật.
+Đồ án môn PHP: website bán nội thất và đồ trang trí, gồm ba vai trò **Customer**, **Quản lý cửa hàng (Manager)** và **Admin hệ thống**. Giao diện NEST tham khảo cách bố trí của MOHO, dùng nội dung và giá minh họa phục vụ học tập. Thanh toán COD mô phỏng, không phát sinh giao dịch thương mại thật.
 
 ## Công nghệ và phạm vi
 
@@ -10,11 +10,11 @@
 | Frontend | Blade, JavaScript thuần/Fetch API, Bootstrap 5.3.3, CSS tùy chỉnh |
 | Database | MySQL 8.4 trong Docker |
 | Máy chủ | PHP 8.3 FPM và Nginx 1.28 |
-| Asset | Bootstrap, font Inter và ảnh minh họa được lưu trong public/ |
+| Asset | Bootstrap, font Inter và ảnh minh họa lưu trong public/; workspace tham khảo bố cục iOrder |
 | API ngoài | Province Open API v2, gợi ý tỉnh/thành ở checkout |
 | Kiểm thử | PHPUnit 11, SQLite trong bộ nhớ, tách khỏi MySQL demo |
 
-Không cần Node.js/npm để chạy giao diện. Docker là cách chạy chính; Laragon là phương án thay thế. Bản này không sử dụng PostgreSQL, Redis hay MinIO. Session/cache dùng file; ảnh upload dùng Laravel public disk.
+Không cần Node.js/npm để chạy giao diện. Docker là cách chạy chính; Laragon là phương án thay thế. Bản này không sử dụng PostgreSQL hay Redis. MinIO lưu các bản sao lưu mã hóa trong bucket riêng tư. Session/cache dùng file; ảnh upload dùng Laravel public disk.
 
 ## Chạy lần đầu bằng Docker trên Windows
 
@@ -26,7 +26,7 @@ cd nest-market-laravel
 powershell -ExecutionPolicy Bypass -File .\scripts\docker-setup.ps1
 ```
 
-Nếu đã có source, bỏ qua hai lệnh clone/cd. Script tự tạo .env từ .env.example khi chưa có, build PHP, khởi động MySQL, cài Composer dependencies, tạo APP_KEY nếu thiếu, chạy migration và dựng app/Nginx. Script chỉ tự seed khi phát hiện database mới chưa có users/products/orders; database có sẵn được giữ lại.
+Nếu đã có source, bỏ qua hai lệnh clone/cd. Script tự tạo .env từ .env.example khi chưa có, build PHP và MinIO, khởi động MySQL/MinIO, cài Composer dependencies, tạo APP_KEY nếu thiếu, chạy migration và dựng app/Nginx. Script chỉ tự seed khi phát hiện database mới chưa có users/products/orders; database có sẵn được giữ lại.
 
 Truy cập **http://localhost:8082/**. Không cần bật PHP/MySQL của Laragon.
 
@@ -73,13 +73,48 @@ Named volumes lưu MySQL, uploads/session/cache, vendor và bootstrap cache. Ngi
 
 ## Tài khoản demo
 
-| Vai trò | Email | Mật khẩu |
+| Vai trò | Tài khoản đăng nhập | Mật khẩu |
 | --- | --- | --- |
-| Admin | admin@nest.test | Password@123 |
+| Admin hệ thống | admin | admin123 |
+| Quản lý cửa hàng | manager | Password@123 |
 | Customer | customer@nest.test | Password@123 |
 
-Seeder chỉ tạo tài khoản nếu chưa tồn tại, không đặt lại mật khẩu đã đổi. Đây là tài khoản trình diễn local.
+Admin đăng nhập bằng username admin, email nội bộ admin@nest.test. Manager dùng username manager, email manager@nest.test. Seeder chỉ tạo tài khoản nếu chưa tồn tại, không đặt lại mật khẩu đã đổi. Đây là tài khoản trình diễn local.
 
+
+## Workspace hệ thống và cửa hàng
+
+- **Admin hệ thống — /admin:** quản lý tài khoản, tạo/sửa tên đăng nhập, phân quyền, khóa/mở tài khoản; sao lưu và phục hồi. Không truy cập nghiệp vụ sản phẩm/đơn hàng của Manager.
+- **Quản lý cửa hàng — /quan-ly:** dashboard, doanh thu theo ngày đặt của đơn đã giao trong khoảng ngày chọn (tối đa 90 ngày), đơn hàng, danh mục, sản phẩm và tồn kho. Không quản lý tài khoản hoặc backup.
+- **Customer:** mua hàng và tự phục vụ trên đơn của mình.
+- Cùng khung workspace có sidebar, header và menu tài khoản: Đổi mật khẩu, Cập nhật thông tin, Đăng xuất. Menu không có Đánh giá cửa hàng.
+- Khóa tài khoản chặn đăng nhập và phiên đang hoạt động. Không cho tự khóa/gỡ quyền Admin hiện tại; phải giữ ít nhất một Admin hoạt động.
+
+## MinIO và sao lưu/phục hồi
+
+| Mục | Giá trị mặc định |
+| --- | --- |
+| API MinIO trên host | http://localhost:19000 |
+| Console MinIO | http://localhost:19001 |
+| Endpoint nội bộ Laravel | http://minio:9000 |
+| Bucket riêng tư | nest-market-backups |
+| Biến cấu hình | MINIO_ROOT_USER, MINIO_ROOT_PASSWORD, MINIO_BUCKET và MINIO_* trong .env |
+
+MinIO được build từ source chính thức tại tag RELEASE.2025-04-22T22-12-26Z vì image upstream không tải được trong môi trường kiểm tra. Lần build đầu cần mạng và có thể lâu hơn. License upstream: GNU AGPLv3, xem https://github.com/minio/minio.
+
+Script Docker setup build/start MinIO và gọi lệnh dưới để tạo bucket nếu chưa có:
+
+```powershell
+docker compose exec app php artisan nest:storage-init
+```
+
+Chỉ Admin được tạo, xem, tải và phục hồi backup qua ứng dụng. Backup chứa 6 bảng nghiệp vụ cùng ảnh upload đang được sản phẩm tham chiếu (tối đa 16 MB tổng ảnh); không chứa source, .env, session, cache, danh sách backups hoặc ảnh catalog đi kèm source.
+
+File .nestbackup chứa JSON nén được mã hóa/xác thực bằng APP_KEY, có SHA-256 và kiểm tra danh sách migration khi đọc. **Giữ APP_KEY của ứng dụng** và cả named volumes MySQL/MinIO; thay APP_KEY sẽ không đọc được bản cũ.
+
+Phục hồi cần mật khẩu Admin hiện tại và chuỗi PHUC HOI <ID>. Hệ thống đọc/kiểm tra bản sao, tạo bản dự phòng, phục hồi DB trong transaction và ghi ảnh vào đường dẫn mới. Khi lỗi DB, rollback và dọn ảnh mới. Tài khoản/mật khẩu trở lại thời điểm sao lưu; cần đăng nhập lại. HTTP mutations được tuần tự hóa trong lúc xử lý dữ liệu.
+
+Đây là phục hồi dữ liệu ứng dụng trên schema tương thích, không phải công cụ dựng lại toàn bộ máy chủ từ thảm họa. Không tự chạy phục hồi trên dữ liệu demo chỉ để kiểm tra; dùng database riêng.
 ## Các chức năng
 
 - **Cửa hàng:** trang chủ, danh mục theo phòng, hàng mới trong 14 ngày, ưu đãi theo giá so sánh thực tế; tìm tên/mô tả, lọc danh mục/phòng/chất liệu/màu/khoảng giá/còn hàng/ưu đãi, sắp xếp và phân trang.
@@ -88,15 +123,15 @@ Seeder chỉ tạo tài khoản nếu chưa tồn tại, không đặt lại m�
 - **Mua hàng:** Mua ngay, checkout COD, tính phí, lưu thông tin nhận hàng khi khách chọn, gợi ý tỉnh/thành qua API; vẫn nhập địa chỉ thủ công khi API lỗi.
 - **Tài khoản:** đăng ký/đăng nhập/đăng xuất, sửa hồ sơ và thông tin nhận hàng mặc định.
 - **Đơn cá nhân:** xem danh sách/chi tiết và timeline, sửa thông tin nhận hàng hoặc hủy đơn khi còn chờ xác nhận; hủy cần lý do.
-- **Admin:** dashboard thống kê, đơn gần đây/hàng sắp hết; CRUD danh mục/sản phẩm, upload ảnh bìa và gallery, quản lý hiển thị/nổi bật/tồn kho, tìm/lọc đơn và cập nhật trạng thái.
+- **Quản lý cửa hàng:** dashboard thống kê theo khoảng ngày, đơn gần đây/hàng sắp hết; CRUD danh mục/sản phẩm, upload ảnh bìa và gallery, quản lý hiển thị/nổi bật/tồn kho, tìm/lọc đơn và cập nhật trạng thái.
 - **Trải nghiệm:** Inter lưu local, responsive, toast tự đóng, hộp thoại xác nhận, hiệu ứng ngắn và hỗ trợ prefers-reduced-motion.
 
-Phân quyền qua middleware auth/admin/customer; Customer chỉ thao tác trên đơn của chính mình. Không có chức năng quên mật khẩu trong giao diện dù database có bảng password_reset_tokens.
+Phân quyền qua middleware auth/admin/manager/customer; Customer chỉ thao tác trên đơn của chính mình. Không có chức năng quên mật khẩu trong giao diện dù database có bảng password_reset_tokens.
 
 ## Quy tắc nghiệp vụ
 
 - Phí vận chuyển 30.000đ; miễn phí khi tiền hàng từ 800.000đ.
-- Trạng thái: pending → confirmed → shipping → delivered. Admin được hủy từ pending/confirmed; Customer chỉ được sửa/hủy khi pending.
+- Trạng thái: pending → confirmed → shipping → delivered. Quản lý cửa hàng được hủy từ pending/confirmed; Customer chỉ được sửa/hủy khi pending.
 - Checkout lấy giá ở database, khóa bản ghi, tạo order/items/event và trừ tồn trong một transaction. checkout_token duy nhất xử lý gửi lặp để không tạo hai đơn/trừ tồn hai lần.
 - OrderWorkflow kiểm tra lại trạng thái trong database, ghi người thao tác/thời điểm/lý do và hoàn tồn khi hủy trong cùng transaction.
 - Đơn lưu tên/giá/thông tin nhận hàng tại thời điểm mua; sửa sản phẩm/hồ sơ không viết lại dữ liệu đơn cũ.
@@ -105,9 +140,9 @@ Phân quyền qua middleware auth/admin/customer; Customer chỉ thao tác trên
 
 ## Migration và seeder
 
-Có **8 file migration**, tạo **6 bảng nghiệp vụ**: users, categories, products, orders, order_items, order_events; cùng bảng hỗ trợ password_reset_tokens và bảng migrations do Laravel quản lý.
+Có **9 file migration**, tạo **6 bảng nghiệp vụ**: users, categories, products, orders, order_items, order_events; bảng hệ thống backups quản lý bản sao lưu; cùng bảng hỗ trợ password_reset_tokens và bảng migrations do Laravel quản lý.
 
-Database mới sau seed có **2 tài khoản, 5 danh mục, 16 sản phẩm nội thất/trang trí**. Seeder không tạo đơn hàng giả; tạo đơn qua luồng mua hàng để demo.
+Database mới sau seed có **3 tài khoản, 5 danh mục, 16 sản phẩm nội thất/trang trí**. Seeder không tạo đơn hàng giả; tạo đơn qua luồng mua hàng để demo.
 
 - database/seeders/DatabaseSeeder.php: tài khoản và gọi catalog seeder.
 - database/seeders/FurnitureCatalogSeeder.php: danh mục, sản phẩm và chuyển dữ liệu mẫu cũ.

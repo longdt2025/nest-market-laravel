@@ -1,5 +1,9 @@
 # Kịch bản kiểm thử và demo
 
+> Cập nhật 30/10/2026: hệ thống có 3 vai trò. Admin hệ thống ở /admin chỉ quản lý tài khoản và sao lưu/phục hồi MinIO. Các nghiệp vụ bán hàng trước đây mang tên Admin nay thuộc Quản lý cửa hàng ở /quan-ly. Customer giữ luồng mua hàng. Account demo: admin/admin123, manager/Password@123, customer@nest.test/Password@123.
+>
+> Có 9 migration, 6 bảng nghiệp vụ và bảng hệ thống backups. MinIO Console localhost:19001, bucket riêng tư nest-market-backups. Sao lưu dữ liệu/ảnh upload được mã hóa bằng APP_KEY; phục hồi yêu cầu mật khẩu, xác nhận, bản dự phòng và transaction. Menu tài khoản có Đổi mật khẩu, Cập nhật thông tin, Đăng xuất.
+
 Cập nhật 28/10/2026. Môi trường chính: Docker tại http://localhost:8082, MySQL host 127.0.0.1:13306. Không cần Laragon. Tài khoản demo và cài đặt xem [README](../README.md).
 
 Các dòng dưới là **kịch bản cần kiểm tra**, không phải khẳng định từng dòng đã chạy thủ công. Kết quả đã xác nhận xem [VERIFICATION.md](VERIFICATION.md). Dùng dữ liệu demo, không reset database đang có dữ liệu cần giữ.
@@ -33,26 +37,26 @@ Các dòng dưới là **kịch bản cần kiểm tra**, không phải khẳng 
 | ID | Thao tác | Kết quả mong đợi |
 | --- | --- | --- |
 | TC20 | Đăng ký email mới; thử email trùng/mật khẩu yếu | Hợp lệ tạo Customer; dữ liệu sai bị chặn |
-| TC21 | Guest mở checkout; Customer mở /admin | Lần lượt chuyển login và trả 403 |
+| TC21 | Guest mở checkout; Customer mở /quan-ly | Lần lượt chuyển login và trả 403 |
 | TC22 | Sửa hồ sơ/thông tin mặc định | Chỉ cập nhật trường cho phép, checkout điền sẵn |
 | TC23 | Đặt đơn có/không chọn lưu địa chỉ | Chỉ cập nhật mặc định khi khách chọn |
 | TC24 | Customer A mở/sửa/hủy đơn Customer B | Bị chặn 403 |
 | TC25 | Sửa nhận hàng khi pending | Lưu thông tin và event; không đổi tổng tiền hoặc tự sửa hồ sơ |
 | TC26 | Gửi lại thông tin nhận hàng giống cũ | Không tạo event dư |
 | TC27 | Hủy pending với lý do hợp lệ | Đơn cancelled, hoàn tồn một lần, có lý do trong timeline |
-| TC28 | Hủy thiếu lý do hoặc sau khi Admin xác nhận | Bị từ chối, đơn/kho không đổi |
+| TC28 | Hủy thiếu lý do hoặc sau khi Quản lý cửa hàng xác nhận | Bị từ chối, đơn/kho không đổi |
 
-## Admin và dữ liệu
+## Quản lý cửa hàng và dữ liệu
 
 | ID | Thao tác | Kết quả mong đợi |
 | --- | --- | --- |
-| TC29 | Admin đăng nhập | Đến dashboard, có số liệu/đơn gần đây/cảnh báo hàng sắp hết |
+| TC29 | Quản lý cửa hàng đăng nhập | Đến dashboard, có số liệu/đơn gần đây/cảnh báo hàng sắp hết |
 | TC30 | CRUD danh mục, thử xóa danh mục có sản phẩm | Thao tác hợp lệ lưu được; danh mục đang dùng không xóa được |
 | TC31 | CRUD sản phẩm; tìm/lọc/phân trang | Kết quả đúng dữ liệu và quyền |
 | TC32 | Upload cover và gallery, thay/xóa gallery | Ảnh mới hiển thị; cover giữ nguyên nếu không thay |
 | TC33 | Upload ảnh sai loại/quá 3 MB, gallery trên 6 ảnh | Validation từ chối |
-| TC34 | Admin đổi trạng thái đúng/sai quy trình | Chỉ nhận chuyển hợp lệ, ghi actor/thời gian/history |
-| TC35 | Admin hủy pending/confirmed rồi thử hủy lại | Hoàn tồn một lần; không hủy đơn shipping/delivered |
+| TC34 | Quản lý cửa hàng đổi trạng thái đúng/sai quy trình | Chỉ nhận chuyển hợp lệ, ghi actor/thời gian/history |
+| TC35 | Quản lý cửa hàng hủy pending/confirmed rồi thử hủy lại | Hoàn tồn một lần; không hủy đơn shipping/delivered |
 | TC36 | Xóa sản phẩm đã có order_items | Chỉ ẩn, giữ lịch sử đơn |
 | TC37 | Chạy lại db:seed sau khi sửa dữ liệu mẫu | Giữ chỉnh sửa mật khẩu/giá/tồn/ảnh/thông số |
 | TC38 | Tắt rồi bật container | Dữ liệu/orders/uploads còn trong volumes |
@@ -88,6 +92,6 @@ Khi nộp báo cáo, ghi kết quả thực tế từng ca, môi trường, ngà
 1. Guest tìm/lọc nội thất, xem gallery và thông số.
 2. Customer đăng nhập, mua COD, xem timeline và hồ sơ.
 3. Tạo đơn demo khác để sửa thông tin rồi hủy khi pending.
-4. Admin thêm sản phẩm có ảnh, xác nhận/giao/hoàn tất một đơn.
+4. Quản lý cửa hàng thêm sản phẩm có ảnh, xác nhận/giao/hoàn tất một đơn.
 5. Giải thích kiểm soát tồn, chống gửi lặp, ownership và rollback.
 6. Chạy migrate:status/PHPUnit; trình bày ERD, Middleware, Eloquent và Docker.

@@ -20,7 +20,7 @@ class ProductImageRegressionTest extends TestCase
         parent::setUp();
         $this->seed(DatabaseSeeder::class);
         Storage::fake('public');
-        $this->actingAs(User::where('email', 'admin@nest.test')->firstOrFail());
+        $this->actingAs(User::where('email', 'manager@nest.test')->firstOrFail());
     }
 
     private function payload(Product $product): array
@@ -34,7 +34,7 @@ class ProductImageRegressionTest extends TestCase
         $product = Product::firstOrFail();
         Storage::disk('public')->put('products/old.jpg', 'old image');
         $product->update(['image_path' => 'products/old.jpg']);
-        $this->put(route('admin.products.update', $product), $this->payload($product))->assertSessionHasNoErrors();
+        $this->put(route('manager.products.update', $product), $this->payload($product))->assertSessionHasNoErrors();
         Storage::disk('public')->assertExists($product->fresh()->image_path);
         Storage::disk('public')->assertMissing('products/old.jpg');
         $this->assertCount(1, Storage::disk('public')->files('products'));
@@ -51,7 +51,7 @@ class ProductImageRegressionTest extends TestCase
         $this->withoutExceptionHandling();
         $caught = false;
         try {
-            $this->put(route('admin.products.update', $product), $this->payload($product));
+            $this->put(route('manager.products.update', $product), $this->payload($product));
         } catch (\RuntimeException $exception) {
             $caught = true;
             $this->assertSame('Simulated database failure', $exception->getMessage());
@@ -72,7 +72,7 @@ class ProductImageRegressionTest extends TestCase
         $this->withoutExceptionHandling();
         $caught = false;
         try {
-            $this->post(route('admin.products.store'), $this->payload($product));
+            $this->post(route('manager.products.store'), $this->payload($product));
         } catch (\RuntimeException $exception) {
             $caught = true;
             $this->assertSame('Simulated database failure', $exception->getMessage());
