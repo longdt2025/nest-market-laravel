@@ -34,6 +34,7 @@ class Product extends Model
     }
 
     protected $fillable = [
+        'sku', 'barcode', 'unit', 'cost_price', 'vat_rate',
         'category_id',
         'name',
         'slug',
@@ -52,11 +53,16 @@ class Product extends Model
         return [
             'is_active' => 'boolean',
             'is_featured' => 'boolean',
-            'price' => 'integer',
+            'price' => 'integer', 'cost_price' => 'integer', 'vat_rate' => 'decimal:2',
             'compare_at_price' => 'integer',
             'stock' => 'integer',
             'gallery' => 'array', 'warranty_months' => 'integer',
         ];
+    }
+
+    public function getCodeAttribute(): string
+    {
+        return ($this->sku !== null && $this->sku !== '') ? $this->sku : 'SP'.str_pad((string) $this->id, 6, '0', STR_PAD_LEFT);
     }
 
     public function getRouteKeyName(): string

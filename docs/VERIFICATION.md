@@ -1,5 +1,15 @@
 # Kết quả kiểm chứng
 
+## Bổ sung sản phẩm/Excel và biểu đồ — 30/10/2026
+
+- Bộ PHPUnit: **74 test / 473 assertions qua** trên SQLite :memory:.
+- Test Excel: scan sheet, kiểm tra dòng, chặn lỗi toàn bộ, nhập mới/cập nhật, chống gửi lặp, file công thức, mã/barcode trùng, dữ liệu thay đổi sau preview, phiên và phân quyền.
+- Đọc lại XLSX xuất để xác nhận đúng dòng theo bộ lọc/lựa chọn, barcode giữ số 0 và tên bắt đầu "=" không thành công thức.
+- UI đã mở hộp chọn cột, đổi cột; upload XLSX thật, chọn sheet và kiểm tra hai dòng cập nhật hợp lệ; không commit thử lên dữ liệu demo.
+- Xuất một sản phẩm được chọn trên trình duyệt tạo file XLSX tải xuống thành công.
+- UI biểu đồ có 12 nhãn January–December; chọn điểm October hiển thị tooltip số đơn đúng. JavaScript có reveal animation 1,1 giây và reduced-motion.
+- Migration thứ 10 thêm sku/barcode/unit/cost_price/vat_rate. Bản backup trước migration có schema cũ; cần tạo bản mới sau cập nhật.
+
 ## Bản cập nhật workspace — 30/10/2026
 
 - PHPUnit: **64 test / 397 assertions đều qua**, SQLite :memory:.

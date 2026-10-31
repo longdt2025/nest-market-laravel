@@ -18,6 +18,11 @@ class ProductRequest extends FormRequest
         $product = $this->route('product');
 
         return [
+            'sku' => ['nullable', 'regex:/^(?!SP[0-9]+$)[a-zA-Z0-9_.-]{1,60}$/i', Rule::unique('products', 'sku')->ignore($product?->id)],
+            'barcode' => ['nullable', 'string', 'max:80', Rule::unique('products', 'barcode')->ignore($product?->id)],
+            'unit' => ['nullable', 'string', 'max:30'],
+            'cost_price' => ['nullable', 'integer', 'min:0', 'max:1000000000'],
+            'vat_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'name' => ['required', 'string', 'min:3', 'max:180'],
             'category_id' => ['required', 'exists:categories,id'],
             'price' => ['required', 'integer', 'min:1000', 'max:1000000000'],

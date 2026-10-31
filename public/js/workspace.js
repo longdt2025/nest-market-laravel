@@ -22,3 +22,9 @@
         });
     });
 })();
+
+document.querySelectorAll('[data-report-filter]').forEach(form=>{
+    form.querySelectorAll('[data-report-date]').forEach(input=>input.addEventListener('change',()=>{
+        form.querySelector('[data-report-period]').value='custom';
+    }));
+});

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\ProductRequest;
 use App\Models\Category;
 use App\Models\Product;
+use App\Services\ProductCatalogQuery;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,11 +19,11 @@ class ProductController extends Controller
 {
     public function index(Request $request): View
     {
-        $filters = $request->validate(['q' => ['nullable', 'string', 'max:100'], 'category' => ['nullable', 'integer', 'exists:categories,id']]);
-        $products = Product::with('category')->when($filters['q'] ?? null, fn ($q, $v) => $q->where('name', 'like', '%'.$v.'%'))
-            ->when($filters['category'] ?? null, fn ($q, $v) => $q->where('category_id', $v))->latest()->orderByDesc('id')->paginate(10)->withQueryString();
+        $catalog = app(ProductCatalogQuery::class);
+        $filters = $catalog->filters($request);
+        $products = $catalog->query($filters)->paginate($filters['per_page'] ?? 25)->withQueryString();
 
-        return view('admin.products.index', ['products' => $products, 'categories' => Category::orderBy('name')->get()]);
+        return view('admin.products.index', ['products' => $products, 'filters' => $filters, 'categories' => Category::orderBy('name')->get()]);
     }
 
     public function create(): View

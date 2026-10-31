@@ -45,8 +45,16 @@ Route::middleware(['auth','customer'])->group(function () {
 Route::prefix('quan-ly')->name('manager.')->middleware(['auth','manager'])->group(function () {
     Route::get('/',[DashboardController::class,'index'])->name('dashboard');
     Route::resource('categories',AdminCategoryController::class)->except('show');
+    Route::post('products/import/scan',[\App\Http\Controllers\Admin\ProductTransferController::class,'scan'])->name('products.import.scan')->middleware('throttle:10,1');
+    Route::post('products/import/preview',[\App\Http\Controllers\Admin\ProductTransferController::class,'preview'])->name('products.import.preview')->middleware('throttle:20,1');
+    Route::post('products/import/commit',[\App\Http\Controllers\Admin\ProductTransferController::class,'commit'])->name('products.import.commit')->middleware('throttle:10,1');
+    Route::post('products/export',[\App\Http\Controllers\Admin\ProductTransferController::class,'export'])->name('products.export')->middleware('throttle:10,1');
+    Route::get('products/import/template',[\App\Http\Controllers\Admin\ProductTransferController::class,'template'])->name('products.template');
+    Route::post('products/bulk',[\App\Http\Controllers\Admin\ProductTransferController::class,'bulk'])->name('products.bulk');
     Route::resource('products',AdminProductController::class)->except('show');
     Route::get('orders',[AdminOrderController::class,'index'])->name('orders.index');
+    Route::post('orders/export',[AdminOrderController::class,'export'])->name('orders.export');
+    Route::get('orders/{order}/print',[AdminOrderController::class,'print'])->name('orders.print');
     Route::get('orders/{order}',[AdminOrderController::class,'show'])->name('orders.show');
     Route::patch('orders/{order}/status',[AdminOrderController::class,'update'])->name('orders.update');
 });

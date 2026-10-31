@@ -1,0 +1,288 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "NEST Manager Product Transfer",
+    "version": "1.0.0",
+    "description": "Laravel web-session operations used by the product workspace. Cookie-authenticated Manager role plus X-CSRF-TOKEN required for POST. No product writes during scan or preview. XLSX only; no formula evaluation."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8082"
+    }
+  ],
+  "security": [
+    {
+      "session": [],
+      "csrf": []
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "session": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "nest_market_docker_session"
+      },
+      "csrf": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-CSRF-TOKEN"
+      }
+    },
+    "schemas": {
+      "TokenSheet": {
+        "type": "object",
+        "required": [
+          "token",
+          "sheet"
+        ],
+        "properties": {
+          "token": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "sheet": {
+            "type": "string",
+            "maxLength": 100
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/quan-ly/products/import/scan": {
+      "post": {
+        "summary": "Stage an XLSX and list worksheets",
+        "description": "5 MB compressed; max 20 sheets, 2,000 data rows, 30 columns each; 64 MB uncompressed. Token bound to session/user, expires in one hour. Up to four staged workbooks per session.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "JSON token (UUID) and sheets (string array)"
+          },
+          "403": {
+            "description": "Only signed-in Manager accounts may access this operation"
+          },
+          "419": {
+            "description": "Missing or expired Laravel CSRF token"
+          },
+          "422": {
+            "description": "Validation failed; JSON errors object contains field-specific messages"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    },
+    "/quan-ly/products/import/preview": {
+      "post": {
+        "summary": "Validate selected sheet without changing products",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenSheet"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "JSON total, errors (invalid-row count), created, updated and first 100 rows. Rows include line, code, name, price, stock, action and error strings. Any invalid row blocks commit."
+          },
+          "403": {
+            "description": "Only signed-in Manager accounts may access this operation"
+          },
+          "419": {
+            "description": "Missing or expired Laravel CSRF token"
+          },
+          "422": {
+            "description": "Validation failed; JSON errors object contains field-specific messages"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    },
+    "/quan-ly/products/import/commit": {
+      "post": {
+        "summary": "Atomically import a previously validated token",
+        "description": "Server revalidates the staged rows and existing-record fingerprints. Changed stock/products or newly claimed codes require preview again. Replaying completed token returns prior result. Blank code creates a product; existing code updates only supplied columns; image/gallery remain unchanged.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "token"
+                ],
+                "properties": {
+                  "token": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "JSON created and updated counts (plus message on first commit)"
+          },
+          "403": {
+            "description": "Only signed-in Manager accounts may access this operation"
+          },
+          "419": {
+            "description": "Missing or expired Laravel CSRF token"
+          },
+          "422": {
+            "description": "Validation failed; JSON errors object contains field-specific messages"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    },
+    "/quan-ly/products/export": {
+      "post": {
+        "summary": "Download a real XLSX",
+        "description": "scope=filtered reuses q/category/room/status/inventory/min_price/max_price/sort/direction filters across all pages, max 5,000 rows. scope=selected uses up to 500 distinct ids independent of filter. Strings explicitly exported as text to preserve barcodes and prevent formula injection.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "scope"
+                ],
+                "properties": {
+                  "scope": {
+                    "type": "string",
+                    "enum": [
+                      "filtered",
+                      "selected"
+                    ]
+                  },
+                  "ids": {
+                    "type": "array",
+                    "maxItems": 500,
+                    "items": {
+                      "type": "integer"
+                    }
+                  },
+                  "q": {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  "category": {
+                    "type": "integer"
+                  },
+                  "room": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "active",
+                      "hidden"
+                    ]
+                  },
+                  "inventory": {
+                    "type": "string",
+                    "enum": [
+                      "in_stock",
+                      "low_stock",
+                      "out_stock"
+                    ]
+                  },
+                  "min_price": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "max_price": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "sort": {
+                    "type": "string",
+                    "enum": [
+                      "id",
+                      "code",
+                      "name",
+                      "barcode",
+                      "unit",
+                      "category",
+                      "room",
+                      "cost_price",
+                      "vat_rate",
+                      "price",
+                      "stock",
+                      "is_active",
+                      "created_at"
+                    ]
+                  },
+                  "direction": {
+                    "type": "string",
+                    "enum": [
+                      "asc",
+                      "desc"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Workbook download",
+            "content": {
+              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only signed-in Manager accounts may access this operation"
+          },
+          "419": {
+            "description": "Missing or expired Laravel CSRF token"
+          },
+          "422": {
+            "description": "Validation failed; JSON errors object contains field-specific messages"
+          },
+          "429": {
+            "description": "Rate limit exceeded"
+          }
+        }
+      }
+    }
+  }
+}

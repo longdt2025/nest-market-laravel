@@ -2,7 +2,7 @@
 
 > Cập nhật 30/10/2026: hệ thống có 3 vai trò. Admin hệ thống ở /admin chỉ quản lý tài khoản và sao lưu/phục hồi MinIO. Các nghiệp vụ bán hàng trước đây mang tên Admin nay thuộc Quản lý cửa hàng ở /quan-ly. Customer giữ luồng mua hàng. Account demo: admin/admin123, manager/Password@123, customer@nest.test/Password@123.
 >
-> Có 9 migration, 6 bảng nghiệp vụ và bảng hệ thống backups. MinIO Console localhost:19001, bucket riêng tư nest-market-backups. Sao lưu dữ liệu/ảnh upload được mã hóa bằng APP_KEY; phục hồi yêu cầu mật khẩu, xác nhận, bản dự phòng và transaction. Menu tài khoản có Đổi mật khẩu, Cập nhật thông tin, Đăng xuất.
+> Có 10 migration, 6 bảng nghiệp vụ và bảng hệ thống backups. MinIO Console localhost:19001, bucket riêng tư nest-market-backups. Sao lưu dữ liệu/ảnh upload được mã hóa bằng APP_KEY; phục hồi yêu cầu mật khẩu, xác nhận, bản dự phòng và transaction. Menu tài khoản có Đổi mật khẩu, Cập nhật thông tin, Đăng xuất.
 
 Cập nhật theo mã nguồn ngày 28/10/2026. Đây là tài liệu kỹ thuật làm cơ sở cho báo cáo môn học; nhóm cần bổ sung thông tin thành viên, phân công thực tế, bìa theo mẫu trường và ảnh minh chứng trước khi nộp.
 
@@ -59,7 +59,7 @@ Số chức năng phụ thuộc cách nhóm thao tác; không dùng số route l
 
 ## 3. Thiết kế dữ liệu
 
-Có 9 migration, 6 bảng nghiệp vụ, bảng password_reset_tokens hỗ trợ và bảng migrations do Laravel quản lý. Bảng password_reset_tokens không đồng nghĩa đã có chức năng quên mật khẩu.
+Có 10 migration, 6 bảng nghiệp vụ, bảng password_reset_tokens hỗ trợ và bảng migrations do Laravel quản lý. Bảng password_reset_tokens không đồng nghĩa đã có chức năng quên mật khẩu.
 
 ### ERD rút gọn
 

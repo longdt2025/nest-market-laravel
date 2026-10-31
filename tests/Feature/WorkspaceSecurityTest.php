@@ -173,7 +173,11 @@ class WorkspaceSecurityTest extends TestCase
             Order::create(['user_id' => $customer->id, 'code' => $code, 'recipient_name' => 'Test', 'phone' => '0912345678', 'shipping_address' => 'Test address for report', 'subtotal' => $total, 'shipping_fee' => 0, 'total' => $total, 'payment_method' => 'cod', 'status' => $status]);
         }
         $this->actingAs($this->manager)->get(route('manager.dashboard', ['from' => now()->toDateString(), 'to' => now()->toDateString()]))
-            ->assertOk()->assertViewHas('sales', 500000);
+            ->assertOk()->assertViewHas('sales', 500000)
+            ->assertDontSee('Thêm sản phẩm')->assertDontSee('Đơn hàng gần đây')->assertDontSee('Sắp hết hàng');
+        $this->get(route('manager.dashboard', ['period' => 'year', 'metric' => 'orders']))->assertOk()
+            ->assertViewHas('chartPoints', fn ($points) => count($points) === 12 && array_sum(array_column($points, 'value')) === 2)
+            ->assertViewHas('monthly', true);
         $this->get(route('manager.dashboard', ['from' => '2026-10-30', 'to' => '2026-10-01']))->assertSessionHasErrors('to');
     }
 

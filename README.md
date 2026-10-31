@@ -1,7 +1,3 @@
-# NEST Market — Website nội thất Laravel
-
-Đồ án môn PHP: website bán nội thất và đồ trang trí, gồm ba vai trò **Customer**, **Quản lý cửa hàng (Manager)** và **Admin hệ thống**. Giao diện NEST tham khảo cách bố trí của MOHO, dùng nội dung và giá minh họa phục vụ học tập. Thanh toán COD mô phỏng, không phát sinh giao dịch thương mại thật.
-
 ## Công nghệ và phạm vi
 
 | Thành phần | Hiện trạng |
@@ -85,7 +81,7 @@ Admin đăng nhập bằng username admin, email nội bộ admin@nest.test. Man
 ## Workspace hệ thống và cửa hàng
 
 - **Admin hệ thống — /admin:** quản lý tài khoản, tạo/sửa tên đăng nhập, phân quyền, khóa/mở tài khoản; sao lưu và phục hồi. Không truy cập nghiệp vụ sản phẩm/đơn hàng của Manager.
-- **Quản lý cửa hàng — /quan-ly:** dashboard, doanh thu theo ngày đặt của đơn đã giao trong khoảng ngày chọn (tối đa 90 ngày), đơn hàng, danh mục, sản phẩm và tồn kho. Không quản lý tài khoản hoặc backup.
+- **Quản lý cửa hàng — /quan-ly:** dashboard chỉ gồm biểu đồ doanh thu/số đơn và bộ lọc ngày (tối đa một năm), đơn hàng, danh mục, sản phẩm và tồn kho. Không quản lý tài khoản hoặc backup.
 - **Customer:** mua hàng và tự phục vụ trên đơn của mình.
 - Cùng khung workspace có sidebar, header và menu tài khoản: Đổi mật khẩu, Cập nhật thông tin, Đăng xuất. Menu không có Đánh giá cửa hàng.
 - Khóa tài khoản chặn đăng nhập và phiên đang hoạt động. Không cho tự khóa/gỡ quyền Admin hiện tại; phải giữ ít nhất một Admin hoạt động.
@@ -128,6 +124,25 @@ Phục hồi cần mật khẩu Admin hiện tại và chuỗi PHUC HOI <ID>. H�
 
 Phân quyền qua middleware auth/admin/manager/customer; Customer chỉ thao tác trên đơn của chính mình. Không có chức năng quên mật khẩu trong giao diện dù database có bảng password_reset_tokens.
 
+
+### Bảng sản phẩm và Excel
+
+Bố cục workspace có bộ lọc nhóm hàng/phòng/trạng thái/tồn kho/khoảng giá, tìm tên/mã/barcode, sắp xếp, phân trang, chọn dòng và bật/tắt cột. Tùy chọn cột được nhớ trong trình duyệt. Thao tác nhóm chỉ đổi trạng thái bán/ẩn, không xóa hàng loạt.
+
+Sản phẩm có thêm mã hàng tùy chọn, barcode, đơn vị tính, giá vốn và VAT. Nếu không nhập mã riêng, hệ thống hiển thị mã SP + ID. Giá bán vẫn là giá cuối hiển thị; VAT chỉ lưu để quản lý, không tự cộng thêm vào checkout.
+
+- **Nhập Excel:** .xlsx tối đa 5 MB, 20 sheet, 2.000 dòng dữ liệu mỗi sheet. Chọn file → chọn sheet → Kiểm tra dữ liệu → xem dòng lỗi/giá/tồn → Nhập dữ liệu.
+- Bắt buộc tên hàng, mã danh mục, giá bán, tồn kho. File mẫu có sheet hướng dẫn và danh sách mã danh mục.
+- Mã trống tạo mới; mã đang có cập nhật. Giữ ảnh và các trường không có trong file.
+- Chặn công thức, mã/barcode trùng, dữ liệu không hợp lệ. Có lỗi thì không nhập dòng nào. Nếu sản phẩm thay đổi sau khi xem trước, phải kiểm tra lại để tránh ghi đè.
+- **Xuất Excel:** theo bộ lọc trên tất cả các trang (tối đa 5.000 sản phẩm), hoặc các dòng được chọn (tối đa 500). File XLSX giữ barcode dạng text và không biến tên hàng thành công thức.
+- Phiên nhập riêng tư, gắn với người dùng/session, có hiệu lực một giờ; các file staging cũ được dọn khi người dùng tải file tiếp theo.
+
+Contract JSON cho các request của giao diện: docs/contracts/product-transfer.openapi.json.
+
+### Biểu đồ Tổng quan
+
+Tổng quan cửa hàng chỉ có biểu đồ và bộ lọc, không có nút thêm sản phẩm/bảng đơn hàng/thẻ tồn kho. Chọn doanh thu đơn đã giao hoặc số đơn đặt, lọc hôm nay/7 ngày/tháng này/năm nay/tùy chọn (tối đa một năm). Biểu đồ nhóm theo tháng; mặc định Năm nay và trục January–December. Có hiệu ứng vẽ từ trái sang phải, đường dóng và tooltip; hỗ trợ chạm/bàn phím và giảm chuyển động.
 ## Quy tắc nghiệp vụ
 
 - Phí vận chuyển 30.000đ; miễn phí khi tiền hàng từ 800.000đ.
@@ -140,7 +155,7 @@ Phân quyền qua middleware auth/admin/manager/customer; Customer chỉ thao t�
 
 ## Migration và seeder
 
-Có **9 file migration**, tạo **6 bảng nghiệp vụ**: users, categories, products, orders, order_items, order_events; bảng hệ thống backups quản lý bản sao lưu; cùng bảng hỗ trợ password_reset_tokens và bảng migrations do Laravel quản lý.
+Có **10 file migration**, tạo **6 bảng nghiệp vụ**: users, categories, products, orders, order_items, order_events; bảng hệ thống backups quản lý bản sao lưu; cùng bảng hỗ trợ password_reset_tokens và bảng migrations do Laravel quản lý.
 
 Database mới sau seed có **3 tài khoản, 5 danh mục, 16 sản phẩm nội thất/trang trí**. Seeder không tạo đơn hàng giả; tạo đơn qua luồng mua hàng để demo.
 

@@ -1,6 +1,9 @@
 @props(['name'=>'shopping-bag','size'=>20])
 <svg xmlns="http://www.w3.org/2000/svg" width="{{ $size }}" height="{{ $size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" {{ $attributes }}>
 @switch($name)
+@case('upload')<path d="M7 18H6a4 4 0 0 1-.6-7.95 6.5 6.5 0 0 1 12.7-1.6A4.7 4.7 0 0 1 18 18h-1M12 21V11m-4 4 4-4 4 4"/>@break
+@case('download')<path d="M4 16v5h16v-5M12 3v12m-4-4 4 4 4-4"/>@break
+@case('columns')<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M3 14h18M9 4v16M15 4v16"/>@break
 @case('search')<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>@break
 @case('shopping-bag')<path d="M4 8h16l-1 13H5L4 8Z"/><path d="M9 9V6a3 3 0 0 1 6 0v3"/>@break
 @case('user')<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>@break

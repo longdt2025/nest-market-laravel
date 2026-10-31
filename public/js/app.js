@@ -53,6 +53,7 @@
    card.querySelector('[data-toast-message]').textContent=String(message);
    toast.appendChild(card);activateToast(card);
  }
+ document.addEventListener('nest:notify',event=>showToast(event.detail.message,event.detail.error===true));
  toast?.querySelectorAll('[data-toast]').forEach(activateToast);
  const mobileToggle=document.querySelector('[data-menu-toggle]');
  const mobilePanel=document.querySelector('[data-mobile-panel]');

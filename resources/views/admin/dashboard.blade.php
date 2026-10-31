@@ -1,10 +1,58 @@
 @extends('layouts.admin')
 @section('title','Tổng quan')
 @section('content')
-<div class="admin-page-header"><div><span class="eyebrow">STORE OVERVIEW</span><h1>Tổng quan cửa hàng</h1><p>Chào mừng trở lại, {{ auth()->user()->name }}. Đây là hoạt động cửa hàng của bạn.</p></div><a href="{{ route('manager.products.create') }}" class="admin-primary"><x-icon name="plus" size="18"/> Thêm sản phẩm</a></div>
-<form class="workspace-report-filter" method="GET"><label>Từ ngày<input type="date" name="from" value="{{ $from }}" required></label><label>Đến ngày<input type="date" name="to" value="{{ $to }}" required></label><button class="admin-primary">Xem báo cáo</button><small>Doanh thu tính theo ngày đặt của đơn đã giao trong khoảng đã chọn.</small></form>
-<div class="stats-grid"><div class="stat-card"><span>Sản phẩm</span><strong>{{ number_format($productCount) }}</strong><small>Đang quản lý trên hệ thống</small><x-icon name="package" size="24" class="stat-icon"/></div><div class="stat-card"><span>Danh mục</span><strong>{{ $categoryCount }}</strong><small>Nhóm hàng trong cửa hàng</small><x-icon name="list" size="24" class="stat-icon"/></div><div class="stat-card"><span>Đơn chờ duyệt</span><strong>{{ $pendingCount }}</strong><small>Đang cần xử lý</small><x-icon name="shopping-bag" size="24" class="stat-icon"/></div><div class="stat-card dark-stat"><span>Doanh thu đã giao</span><strong>{{ number_format($sales,0,',','.') }}₫</strong><small>Đơn đặt trong khoảng đã chọn và đã giao</small><x-icon name="arrow-right" size="24" class="stat-icon"/></div></div>
-<div class="admin-panel workspace-chart"><div class="panel-head"><div><h2>Doanh thu theo ngày đặt</h2><p>Chỉ tính các đơn đã giao · {{ \Carbon\Carbon::parse($from)->format('d/m/Y') }} — {{ \Carbon\Carbon::parse($to)->format('d/m/Y') }}</p></div></div>
-@if(collect($daily)->sum('sales')>0)<div class="workspace-chart-bars" role="img" aria-label="Biểu đồ doanh thu đơn đã giao theo ngày đặt">@foreach($daily as $point)<div title="{{ $point['date'] }}: {{ number_format($point['sales'],0,',','.') }}đ"><span style="height:{{ $point['sales']>0 ? max(3,($point['sales']/$maxSales)*100) : 0 }}%"></span><small>{{ $point['date'] }}</small></div>@endforeach</div>@else<p class="workspace-chart-empty">Chưa có doanh thu từ đơn đã giao trong khoảng này.</p>@endif</div>
-<div class="admin-section-grid"><div class="admin-panel"><div class="panel-head"><div><h2>Đơn hàng gần đây</h2><p>Theo dõi các đơn đặt mới nhất</p></div><a href="{{ route('manager.orders.index') }}">Xem tất cả <x-icon name="arrow-right" size="15"/></a></div><div class="table-scroll"><table class="admin-table"><thead><tr><th>MÃ ĐƠN</th><th>KHÁCH HÀNG</th><th>TỔNG TIỀN</th><th>TRẠNG THÁI</th></tr></thead><tbody>@forelse($recentOrders as $order)<tr><td><a class="table-strong" href="{{ route('manager.orders.show',$order) }}">{{ $order->code }}</a></td><td>{{ $order->user->name }}</td><td>{{ number_format($order->total,0,',','.') }}₫</td><td><span class="status status-{{ $order->status }}">{{ $order->status_label }}</span></td></tr>@empty<tr><td colspan="4">Chưa có đơn hàng.</td></tr>@endforelse</tbody></table></div></div><div class="admin-panel stock-panel"><div class="panel-head"><div><h2>Sắp hết hàng</h2><p>Các mặt hàng tồn kho từ 5 trở xuống</p></div></div>@forelse($lowStock as $product)<a class="stock-list-item" href="{{ route('manager.products.edit',$product) }}"><img src="{{ $product->image_url }}" alt=""><div><strong>{{ $product->name }}</strong><small>{{ $product->category->name ?? 'Sản phẩm' }}</small></div><span>{{ $product->stock }} còn</span></a>@empty<p class="p-3">Tồn kho hiện ổn định.</p>@endforelse</div></div>
+<section class="admin-panel report-toolbar">
+    <div><span class="eyebrow">BUSINESS REPORT</span><h1>Tổng quan cửa hàng</h1></div>
+    <form method="GET" class="report-filter" data-report-filter>
+        <label>Chỉ số<select name="metric"><option value="sales" @selected($metric==='sales')>Doanh thu</option><option value="orders" @selected($metric==='orders')>Số đơn đặt</option></select></label>
+        <label>Thời gian<select name="period" data-report-period>
+            @foreach(['today'=>'Hôm nay','week'=>'7 ngày gần nhất','month'=>'Tháng này','year'=>'Năm nay','custom'=>'Tùy chọn'] as $key=>$name)<option value="{{ $key }}" @selected($period===$key)>{{ $name }}</option>@endforeach
+        </select></label>
+        <label>Từ ngày<input type="date" name="from" value="{{ $from }}" required data-report-date></label>
+        <label>Đến ngày<input type="date" name="to" value="{{ $to }}" required data-report-date></label>
+        <button class="admin-primary">Áp dụng</button>
+    </form>
+</section>
+<section class="admin-panel report-panel">
+    <div class="report-heading">
+        <div><h2>{{ $metric==='sales'?'Biểu đồ doanh thu':'Biểu đồ số đơn đặt' }}</h2><p>{{ \Carbon\Carbon::parse($from)->format('d/m/Y') }} — {{ \Carbon\Carbon::parse($to)->format('d/m/Y') }} · Theo {{ $monthly?'tháng':'ngày' }}</p></div>
+        <span class="report-legend"><i></i>{{ $metric==='sales'?'Doanh thu đơn đã giao':'Tất cả đơn được đặt' }}</span>
+    </div>
+    <p class="report-description">{{ $metric==='sales'?'Doanh thu được nhóm theo ngày đặt, chỉ tính đơn đã giao thành công.':'Số đơn theo ngày đặt, gồm tất cả trạng thái.' }}</p>
+    <div class="report-chart-scroll" data-report-chart data-unit="{{ $metric==='sales'?'đ':'đơn' }}" data-series-label="{{ $metric==='sales'?'Doanh thu':'Số đơn đặt' }}">
+        <svg class="report-line-chart" viewBox="0 0 1000 370" role="img" aria-labelledby="report-chart-title report-chart-description">
+            <title id="report-chart-title">{{ $metric==='sales'?'Doanh thu đơn đã giao':'Số đơn được đặt' }}</title>
+            <desc id="report-chart-description">Biểu đồ theo {{ $monthly?'tháng':'ngày' }} trong khoảng {{ $from }} đến {{ $to }}. Di chuyển tới từng điểm để xem số liệu.</desc>
+            <defs><clipPath id="report-reveal"><rect class="report-reveal-mask" x="0" y="0" width="1000" height="370"/></clipPath><linearGradient id="report-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c6683d" stop-opacity=".13"/><stop offset="100%" stop-color="#c6683d" stop-opacity=".01"/></linearGradient></defs>
+            @for($tick=0;$tick<=4;$tick++)
+                @php($value=$ceiling*$tick/4)
+                @php($y=305-$tick*65)
+                <line x1="90" x2="970" y1="{{ $y }}" y2="{{ $y }}" class="report-grid-line"/>
+                <text x="76" y="{{ $y+4 }}" text-anchor="end" class="report-axis-label">{{ $metric==='orders'?number_format($value,0,',','.'):($value>=1000000?number_format($value/1000000,1,',','.').' tr':number_format($value/1000,0,',','.').' k') }}</text>
+            @endfor
+            @php($polyline=collect($chartPoints)->map(fn($p)=>$p['x'].','.$p['y'])->implode(' '))
+            <g clip-path="url(#report-reveal)">
+            <polygon points="{{ $chartPoints[0]['x'] }},305 {{ $polyline }} {{ $chartPoints[count($chartPoints)-1]['x'] }},305" fill="url(#report-area)"/>
+            <polyline points="{{ $polyline }}" class="report-data-line"/>
+            @foreach($chartPoints as $point)
+                <circle cx="{{ $point['x'] }}" cy="{{ $point['y'] }}" r="4" class="report-data-point" data-report-point data-x="{{ $point['x'] }}" data-y="{{ $point['y'] }}" data-label="{{ $point['tooltip_label'] ?? $point['label'] }}" data-value="{{ $point['value'] }}" tabindex="0" aria-label="{{ $point['label'] }}: {{ number_format($point['value'],0,',','.') }} {{ $metric==='sales'?'đồng':'đơn' }}"><title>{{ $point['label'] }}: {{ number_format($point['value'],0,',','.') }} {{ $metric==='sales'?'đ':'đơn' }}</title></circle>
+                @if($monthly || $loop->first || $loop->last || $loop->index % max(1,(int)ceil(count($chartPoints)/12))===0)
+                    <text x="{{ $point['x'] }}" y="335" text-anchor="middle" class="report-axis-label">{{ $point['label'] }}</text>
+                @endif
+            @endforeach
+            </g>
+            <g class="report-crosshair" hidden pointer-events="none">
+                <line data-guide-x y1="45" y2="305"/>
+                <line data-guide-y x1="90" x2="970"/>
+                <circle data-guide-dot r="6"/>
+            </g>
+        </svg>
+        <div class="report-tooltip" data-report-tooltip role="status" hidden><strong></strong><span></span></div>
+    </div>
+    @if(collect($chartPoints)->sum('value')===0)<p class="report-no-data">{{ $metric==='sales'?'Chưa có doanh thu từ đơn đã giao':'Chưa có đơn hàng' }} trong khoảng thời gian này.</p>@endif
+</section>
 @endsection
+
+@push('scripts')
+<script src="{{ asset('js/report-chart.js') }}?v={{ filemtime(public_path('js/report-chart.js')) }}" defer></script>
+@endpush
