@@ -16,12 +16,14 @@ class ProductImageRegressionTest extends TestCase
 {
     use RefreshDatabase;
 
+    private array $seededMedia = [];
+
     protected function setUp(): void
     {
         parent::setUp();
         $this->seed(DatabaseSeeder::class);
         Storage::fake('public');
-        Storage::fake('minio_media');
+        $this->seededMedia = Storage::disk('minio_media')->allFiles('products/minio');
         $this->actingAs(User::where('email', 'manager@nest.test')->firstOrFail());
     }
 
@@ -68,7 +70,7 @@ class ProductImageRegressionTest extends TestCase
         $this->put(route('manager.products.update', $product), $this->payload($product))->assertSessionHasNoErrors();
         Storage::disk('minio_media')->assertExists($product->fresh()->image_path);
         Storage::disk('public')->assertMissing('products/old.jpg');
-        $this->assertCount(1, Storage::disk('minio_media')->allFiles('products/minio'));
+        $this->assertCount(count($this->seededMedia)+1, Storage::disk('minio_media')->allFiles('products/minio'));
         $this->assertSame([], Storage::disk('public')->allFiles('products'));
     }
 
@@ -92,7 +94,7 @@ class ProductImageRegressionTest extends TestCase
         $this->assertSame('products/old.jpg', $product->fresh()->image_path);
         Storage::disk('public')->assertExists('products/old.jpg');
         $this->assertSame(['products/old.jpg'], Storage::disk('public')->files('products'));
-        $this->assertSame([], Storage::disk('minio_media')->allFiles('products/minio'));
+        $this->assertSame($this->seededMedia, Storage::disk('minio_media')->allFiles('products/minio'));
     }
 
     public function test_failed_creation_does_not_leave_an_orphan_upload(): void
@@ -113,6 +115,6 @@ class ProductImageRegressionTest extends TestCase
         $this->assertTrue($caught);
         $this->assertSame($count, Product::count());
         $this->assertSame([], Storage::disk('public')->files('products'));
-        $this->assertSame([], Storage::disk('minio_media')->allFiles('products/minio'));
+        $this->assertSame($this->seededMedia, Storage::disk('minio_media')->allFiles('products/minio'));
     }
 }

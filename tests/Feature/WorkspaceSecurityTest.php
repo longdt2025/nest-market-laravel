@@ -132,7 +132,7 @@ class WorkspaceSecurityTest extends TestCase
         Storage::shouldReceive('disk')->with('minio')->andThrow(new \RuntimeException('MinIO unavailable'));
         $this->actingAs($this->admin)->post(route('system.backups.store'), ['label' => 'Failure'])->assertSessionHasErrors('backup');
         $this->assertDatabaseCount('backups', 0);
-        $this->assertDatabaseCount('products', 16);
+        $this->assertDatabaseCount('products', 22);
     }
 
     public function test_restore_requires_current_password_and_explicit_confirmation(): void

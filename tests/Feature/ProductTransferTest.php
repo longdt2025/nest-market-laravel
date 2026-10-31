@@ -99,7 +99,7 @@ class ProductTransferTest extends TestCase
         $this->assertSame(1, $preview['errors']);
         $this->assertSame(3, $preview['rows'][1]['line']);
         $this->postJson(route('manager.products.import.commit'), ['token' => $token])->assertUnprocessable();
-        $this->assertDatabaseCount('products', 16);
+        $this->assertDatabaseCount('products', 22);
     }
 
     public function test_update_preserves_images_and_detects_stock_change_after_preview(): void
@@ -196,7 +196,7 @@ class ProductTransferTest extends TestCase
         $p = Product::firstOrFail();
         $this->post(route('manager.products.bulk'), ['action' => 'hide', 'ids' => [$p->id]])->assertRedirect()->assertSessionHasNoErrors();
         $this->assertFalse($p->fresh()->is_active);
-        $this->assertSame(15, Product::where('is_active', true)->count());
+        $this->assertSame(21, Product::where('is_active', true)->count());
     }
 
     public function test_header_sort_uses_displayed_codes_and_numeric_values_while_preserving_filters(): void

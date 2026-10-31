@@ -59,7 +59,7 @@ class StorefrontTest extends TestCase
             ->assertOk()->assertSee('Ly gốm Kanso')->assertDontSee('Đèn bàn Nami')
             ->assertSee('action="'.route('shop.new').'"', false);
         $this->get(route('shop.new', ['page' => 2]))->assertOk()
-            ->assertViewHas('products', fn ($page) => $page->currentPage() === 2 && $page->count() === 4);
+            ->assertViewHas('products', fn ($page) => $page->currentPage() === 2 && $page->count() === 10);
         Product::query()->update(['created_at' => now()->subDays(45)]);
         $this->get(route('shop.new'))->assertOk()->assertSee('Chưa có hàng mới');
         $this->get(route('shop.index', ['q' => 'Kanso']))->assertSee('Ly gốm Kanso');

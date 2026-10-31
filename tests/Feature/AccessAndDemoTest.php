@@ -116,7 +116,7 @@ class AccessAndDemoTest extends TestCase
         $this->seed(DatabaseSeeder::class);
         $this->assertSame($snapshots, [$user->fresh()->getAttributes(), $product->fresh()->getAttributes(), $category->fresh()->getAttributes()]);
         $this->assertDatabaseCount('users', 3);
-        $this->assertDatabaseCount('products', 16);
+        $this->assertDatabaseCount('products', 22);
         $this->assertDatabaseCount('categories', 5);
     }
 

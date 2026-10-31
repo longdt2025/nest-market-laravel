@@ -35,7 +35,7 @@ class FurnitureStorefrontTest extends TestCase
 
     public function test_offers_include_only_visible_products_with_a_real_discount(): void
     {
-        $this->get(route('shop.offers'))->assertOk()->assertViewHas('products', fn ($page) => $page->total() === 15 && $page->every(fn ($p) => $p->compare_at_price > $p->price));
+        $this->get(route('shop.offers'))->assertOk()->assertViewHas('products', fn ($page) => $page->total() === 21 && $page->every(fn ($p) => $p->compare_at_price > $p->price));
         $this->getJson(route('shop.index', ['min_price' => 5000000, 'max_price' => 1000000]))->assertUnprocessable()->assertJsonValidationErrors('max_price');
         $this->getJson(route('shop.index', ['room' => 'unknown']))->assertUnprocessable();
     }

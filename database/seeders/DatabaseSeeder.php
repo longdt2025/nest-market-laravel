@@ -16,5 +16,6 @@ class DatabaseSeeder extends Seeder
             }
         }
         $this->call(FurnitureCatalogSeeder::class);
+        $this->call(AdditionalFurnitureSeeder::class);
     }
 }
