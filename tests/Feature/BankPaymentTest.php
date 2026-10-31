@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\User;
 use App\Services\BackupService;
 use App\Services\OrderWorkflow;
+use App\Support\ProductImages;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -52,7 +53,7 @@ class BankPaymentTest extends TestCase
         $this->actingAs($this->manager)->put(route('manager.payments.settings.update'), ['enabled' => 1, 'bank_name' => 'BIDV', 'account_number' => '0012345678', 'account_holder' => 'TEST ACCOUNT', 'qr' => UploadedFile::fake()->image('qr.png', 300, 300)])->assertSessionHasNoErrors();
         $setting = PaymentSetting::active();
         $this->assertNotNull($setting);
-        Storage::disk('public')->assertExists($setting->qr_path);
+        Storage::disk('minio_media')->assertExists($setting->qr_path);
         $this->put(route('manager.payments.settings.update'), ['enabled' => 1, 'bank_name' => 'BIDV', 'account_number' => '0012345678', 'account_holder' => 'TEST', 'qr' => UploadedFile::fake()->create('qr.svg', 1, 'image/svg+xml')])->assertSessionHasErrors('qr');
     }
 
@@ -71,6 +72,35 @@ class BankPaymentTest extends TestCase
         $this->assertSame('0012345678', $order->fresh()->payment_details['account_number']);
         $this->post(route('checkout.store'), $payload)->assertSessionHasNoErrors();
         $this->assertDatabaseCount('orders', 1);
+    }
+
+    public function test_replacing_qr_uses_minio_and_keeps_old_order_instructions(): void
+    {
+        $setting = $this->setting();
+        $oldPath = $setting->qr_path;
+        $order = $this->order(['payment_qr_path' => $oldPath]);
+        $this->actingAs($this->manager)->put(route('manager.payments.settings.update'), [
+            'enabled' => 1, 'bank_name' => 'BIDV', 'account_number' => '0012345678',
+            'account_holder' => 'TEST ACCOUNT', 'qr' => UploadedFile::fake()->image('new-qr.png'),
+        ])->assertSessionHasNoErrors()->assertSessionHas('success');
+        $newPath = $setting->fresh()->qr_path;
+        $this->assertStringStartsWith('products/minio/', $newPath);
+        Storage::disk('minio_media')->assertExists($newPath);
+        Storage::disk('public')->assertExists($oldPath);
+        $this->assertSame($oldPath, $order->fresh()->payment_qr_path);
+        $this->get(route('manager.payments.settings'))->assertOk()->assertSee(ProductImages::url($newPath), false);
+    }
+
+    public function test_qr_storage_failure_is_a_form_error_and_preserves_old_settings(): void
+    {
+        $setting = $this->setting();
+        $before = $setting->fresh()->getAttributes();
+        Storage::shouldReceive('disk')->with('minio_media')->andThrow(new \RuntimeException('Storage unavailable'));
+        $this->actingAs($this->manager)->put(route('manager.payments.settings.update'), [
+            'enabled' => 1, 'bank_name' => 'New bank', 'account_number' => '999999',
+            'account_holder' => 'NEW ACCOUNT', 'qr' => UploadedFile::fake()->image('qr.png'),
+        ])->assertSessionHasErrors('qr');
+        $this->assertSame($before, $setting->fresh()->getAttributes());
     }
 
     public function test_disabled_transfer_rejects_checkout_without_decrementing_stock(): void

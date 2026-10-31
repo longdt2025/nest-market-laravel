@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Backup;
 use App\Models\User;
+use App\Support\ProductImages;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
@@ -39,14 +40,14 @@ class BackupService
                 if (! str_starts_with($path, 'products/') || isset($files[$path])) {
                     continue;
                 }
-                if (str_contains($path, '..') || ! Storage::disk('public')->exists($path)) {
+                if (str_contains($path, '..') || ! ProductImages::disk($path)->exists($path)) {
                     throw ValidationException::withMessages(['backup' => 'Ảnh upload bị thiếu hoặc không hợp lệ. Kiểm tra sản phẩm trước khi sao lưu.']);
                 }
-                $bytes += Storage::disk('public')->size($path);
+                $bytes += ProductImages::disk($path)->size($path);
                 if ($bytes > config('backups.max_bytes')) {
                     throw ValidationException::withMessages(['backup' => 'Bản sao lưu vượt giới hạn 16 MB ảnh.']);
                 }
-                $files[$path] = base64_encode(Storage::disk('public')->get($path));
+                $files[$path] = base64_encode(ProductImages::disk($path)->get($path));
             }
         }
         $qrPaths = array_merge(array_column($snapshot['payment_settings'], 'qr_path'), array_column($snapshot['orders'], 'payment_qr_path'));
@@ -54,14 +55,14 @@ class BackupService
             if (isset($files[$path])) {
                 continue;
             }
-            if (! preg_match('#^products/[a-zA-Z0-9_./-]+$#', $path) || str_contains($path, '..') || ! Storage::disk('public')->exists($path)) {
+            if (! preg_match('#^products/[a-zA-Z0-9_./-]+$#', $path) || str_contains($path, '..') || ! ProductImages::disk($path)->exists($path)) {
                 throw ValidationException::withMessages(['backup' => 'Ảnh QR thanh toán bị thiếu hoặc không hợp lệ.']);
             }
-            $bytes += Storage::disk('public')->size($path);
+            $bytes += ProductImages::disk($path)->size($path);
             if ($bytes > config('backups.max_bytes')) {
                 throw ValidationException::withMessages(['backup' => 'Bản sao lưu vượt giới hạn ảnh.']);
             }
-            $files[$path] = base64_encode(Storage::disk('public')->get($path));
+            $files[$path] = base64_encode(ProductImages::disk($path)->get($path));
         }
         $payload = ['format' => 'nest-backup-v1', 'schema' => $this->schema(), 'created_at' => now()->toIso8601String(), 'tables' => $snapshot, 'files' => $files];
         $json = json_encode($payload, JSON_THROW_ON_ERROR);
@@ -139,8 +140,8 @@ class BackupService
         $map = [];
         try {
             foreach ($data['files'] ?? [] as $path => $content) {
-                $new = 'products/restored/'.Str::uuid().'/'.basename($path);
-                if (! Storage::disk('public')->put($new, base64_decode($content, true))) {
+                $new = str_starts_with($path, 'products/minio/') ? 'products/minio/'.Str::uuid().'.'.pathinfo($path, PATHINFO_EXTENSION) : 'products/restored/'.Str::uuid().'/'.basename($path);
+                if (! ProductImages::disk($new)->put($new, base64_decode($content, true))) {
                     throw new \RuntimeException('Cannot restore uploaded image.');
                 }
                 $map[$path] = $new;
@@ -180,7 +181,9 @@ class BackupService
                 $backup->update(['restored_at' => now()]);
             });
         } catch (\Throwable $e) {
-            Storage::disk('public')->delete($newFiles);
+            foreach ($newFiles as $newFile) {
+                ProductImages::disk($newFile)->delete($newFile);
+            }
             throw $e;
         }
     }

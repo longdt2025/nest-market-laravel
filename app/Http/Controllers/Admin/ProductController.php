@@ -7,10 +7,10 @@ use App\Http\Requests\ProductRequest;
 use App\Models\Category;
 use App\Models\Product;
 use App\Services\ProductCatalogQuery;
+use App\Support\ProductImages;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
@@ -93,7 +93,7 @@ class ProductController extends Controller
         $uploads = [];
         try {
             if ($request->hasFile('image')) {
-                $path = $request->file('image')->store('products', 'public');
+                $path = $request->file('image')->store('products/minio', 'minio_media');
                 if (! $path) {
                     throw ValidationException::withMessages(['image' => 'Không lưu được ảnh. Vui lòng thử lại.']);
                 }
@@ -102,7 +102,7 @@ class ProductController extends Controller
             if ($request->hasFile('gallery_images')) {
                 $data['gallery'] = [];
                 foreach ($request->file('gallery_images') as $file) {
-                    $path = $file->store('products', 'public');
+                    $path = $file->store('products/minio', 'minio_media');
                     if (! $path) {
                         throw ValidationException::withMessages(['gallery_images' => 'Không lưu được bộ ảnh. Vui lòng thử lại.']);
                     }
@@ -125,7 +125,7 @@ class ProductController extends Controller
         foreach (array_unique($paths) as $path) {
             // Bundled catalog pictures are shared assets, not uploaded files.
             if (is_string($path) && str_starts_with($path, 'products/') && ! str_contains($path, '..')) {
-                Storage::disk('public')->delete($path);
+                ProductImages::disk($path)->delete($path);
             }
         }
     }

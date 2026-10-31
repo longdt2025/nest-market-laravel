@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/',[ShopController::class,'home'])->name('shop.home');
+Route::get('/media/products/{file}',[\App\Http\Controllers\ProductImageController::class,'show'])->where('file','[A-Za-z0-9_-]{20,64}\.(?:png|jpg|jpeg|webp|gif)')->name('products.image');
 Route::get('/san-pham',[ShopController::class,'index'])->name('shop.index');
 Route::get('/hang-moi',[ShopController::class,'newArrivals'])->name('shop.new');
 Route::get('/uu-dai',[ShopController::class,'offers'])->name('shop.offers');

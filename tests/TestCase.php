@@ -2,6 +2,11 @@
 namespace Tests;
 abstract class TestCase extends \Illuminate\Foundation\Testing\TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        \Illuminate\Support\Facades\Storage::fake('minio_media');
+    }
     public function createApplication()
     {
         $app = parent::createApplication();

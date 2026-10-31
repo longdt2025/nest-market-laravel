@@ -40,6 +40,8 @@ Artisan::command('nest:storage-init', function () {
         'credentials'=>['key'=>$disk['key'],'secret'=>$disk['secret']],
         'http'=>['connect_timeout'=>3,'timeout'=>15],
     ]);
-    if (!$client->doesBucketExistV2($disk['bucket'])) $client->createBucket(['Bucket'=>$disk['bucket']]);
-    $this->info('Private MinIO bucket ready: '.$disk['bucket']);
+    foreach ([$disk['bucket'],config('filesystems.disks.minio_media.bucket')] as $bucket) {
+        if (!$client->doesBucketExistV2($bucket)) $client->createBucket(['Bucket'=>$bucket]);
+        $this->info('Private MinIO bucket ready: '.$bucket);
+    }
 })->purpose('Create the private MinIO backup bucket if missing');

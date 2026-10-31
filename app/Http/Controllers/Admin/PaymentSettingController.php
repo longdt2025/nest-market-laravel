@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\PaymentSetting;
+use App\Support\ProductImages;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class PaymentSettingController extends Controller
@@ -31,7 +31,7 @@ class PaymentSettingController extends Controller
         $path = null;
         try {
             if ($request->hasFile('qr')) {
-                $path = $request->file('qr')->store('products/payment-qr', 'public');
+                $path = $request->file('qr')->store('products/minio', 'minio_media');
                 if (! $path) {
                     throw new \RuntimeException('Không lưu được ảnh QR.');
                 }
@@ -44,9 +44,14 @@ class PaymentSettingController extends Controller
             ]);
         } catch (\Throwable $e) {
             if ($path) {
-                Storage::disk('public')->delete($path);
+                try {
+                    ProductImages::disk($path)->delete($path);
+                } catch (\Throwable $cleanupError) {
+                    report($cleanupError);
+                }
             }
-            throw $e;
+            report($e);
+            throw ValidationException::withMessages(['qr' => 'Không lưu được ảnh QR. Vui lòng kiểm tra MinIO và thử lại; thông tin thanh toán cũ vẫn được giữ.']);
         }
 
         // Keep earlier QR images: existing orders retain their original payment instructions.

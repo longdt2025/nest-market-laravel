@@ -109,6 +109,9 @@ class Product extends Model
         if (! $path) {
             return asset('images/product-fallback.svg');
         }
+        if (str_starts_with($path, 'products/minio/')) {
+            return route('products.image', ['file' => basename($path)]);
+        }
 
         if (str_starts_with($path, 'catalog/') && ! str_contains($path, '..')) {
             return is_file(public_path('images/'.$path)) ? asset('images/'.$path) : asset('images/product-fallback.svg');

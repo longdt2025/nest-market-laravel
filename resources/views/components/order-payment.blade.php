@@ -4,7 +4,7 @@
 @if($order->payment_method==='bank_transfer')
     @if($order->status!=='cancelled' && !in_array($order->payment_status,['paid','refunded']))
     @php($vietQrUrl=app(\App\Services\VietQr::class)->imageUrl($order))
-    @php($fallback=$order->payment_qr_path ? Storage::disk('public')->url($order->payment_qr_path) : null)
+    @php($fallback=$order->payment_qr_path ? \App\Support\ProductImages::url($order->payment_qr_path) : null)
     @php($transferReference=$vietQrUrl ? app(\App\Services\VietQr::class)->reference($order) : $order->code)
     @if($vietQrUrl||$fallback)<a href="{{ $vietQrUrl ?? $fallback }}" target="_blank" rel="noopener noreferrer" aria-label="Mở ảnh QR thanh toán"><img class="bank-payment-qr" src="{{ $vietQrUrl ?? $fallback }}" referrerpolicy="no-referrer" @if($vietQrUrl&&$fallback) data-fallback="{{ $fallback }}" onerror="this.onerror=null;this.src=this.dataset.fallback;this.closest('a').href=this.dataset.fallback;this.closest('section').querySelector('[data-qr-fallback-note]').hidden=false" @endif alt="QR chuyển khoản cho đơn {{ $order->code }}"></a>@endif
     <p class="bank-payment-help" data-qr-fallback-note hidden>Không tải được VietQR tự động. Đang hiển thị QR nhận tiền của cửa hàng; vui lòng nhập số tiền và nội dung bên dưới.</p>

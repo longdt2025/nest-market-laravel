@@ -72,13 +72,13 @@ class FurnitureStorefrontTest extends TestCase
         $cover = $product->image_path;
         $oldGallery = $product->gallery;
         $this->assertCount(2, $oldGallery);
-        Storage::disk('public')->assertExists([$cover, ...$oldGallery]);
+        Storage::disk('minio_media')->assertExists([$cover, ...$oldGallery]);
         unset($data['image']);
         $data['gallery_images'] = [UploadedFile::fake()->image('new.png')];
         $this->put(route('manager.products.update', $product), $data)->assertSessionHasNoErrors();
         $this->assertSame($cover, $product->fresh()->image_path);
-        Storage::disk('public')->assertMissing($oldGallery);
-        Storage::disk('public')->assertExists([$cover, ...$product->fresh()->gallery]);
+        Storage::disk('minio_media')->assertMissing($oldGallery);
+        Storage::disk('minio_media')->assertExists([$cover, ...$product->fresh()->gallery]);
     }
 
     public function test_gallery_database_failure_cleans_new_uploads_and_preserves_existing_gallery(): void
