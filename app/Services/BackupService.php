@@ -14,7 +14,7 @@ use Illuminate\Validation\ValidationException;
 
 class BackupService
 {
-    public const TABLES = ['users', 'categories', 'products', 'orders', 'order_items', 'order_events'];
+    public const TABLES = ['users', 'categories', 'products', 'payment_settings', 'orders', 'order_items', 'order_events'];
 
     private function schema(): array
     {
@@ -48,6 +48,20 @@ class BackupService
                 }
                 $files[$path] = base64_encode(Storage::disk('public')->get($path));
             }
+        }
+        $qrPaths = array_merge(array_column($snapshot['payment_settings'], 'qr_path'), array_column($snapshot['orders'], 'payment_qr_path'));
+        foreach (array_unique(array_filter($qrPaths)) as $path) {
+            if (isset($files[$path])) {
+                continue;
+            }
+            if (! preg_match('#^products/[a-zA-Z0-9_./-]+$#', $path) || str_contains($path, '..') || ! Storage::disk('public')->exists($path)) {
+                throw ValidationException::withMessages(['backup' => 'Ảnh QR thanh toán bị thiếu hoặc không hợp lệ.']);
+            }
+            $bytes += Storage::disk('public')->size($path);
+            if ($bytes > config('backups.max_bytes')) {
+                throw ValidationException::withMessages(['backup' => 'Bản sao lưu vượt giới hạn ảnh.']);
+            }
+            $files[$path] = base64_encode(Storage::disk('public')->get($path));
         }
         $payload = ['format' => 'nest-backup-v1', 'schema' => $this->schema(), 'created_at' => now()->toIso8601String(), 'tables' => $snapshot, 'files' => $files];
         $json = json_encode($payload, JSON_THROW_ON_ERROR);
@@ -151,6 +165,12 @@ class BackupService
                             if (is_array($gallery)) {
                                 $row['gallery'] = json_encode(array_map(fn ($p) => $map[$p] ?? $p, $gallery));
                             }
+                        }
+                        if ($table === 'payment_settings') {
+                            $row['qr_path'] = $map[$row['qr_path']] ?? $row['qr_path'];
+                        }
+                        if ($table === 'orders' && ! empty($row['payment_qr_path'])) {
+                            $row['payment_qr_path'] = $map[$row['payment_qr_path']] ?? $row['payment_qr_path'];
                         }
                         DB::table($table)->insert($row);
                     }

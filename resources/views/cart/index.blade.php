@@ -1,8 +1,8 @@
 @extends('layouts.store')
 @section('title','Giỏ hàng — NEST Market')
 @section('content')
-<div class="container-wide page-breadcrumb"><a href="{{ route('shop.home') }}">Trang chủ</a><x-icon name="chevron-right" size="14"/><span>Giỏ hàng</span></div>
-<section class="container-wide interior-page"><div class="interior-heading"><span class="eyebrow">YOUR SELECTION</span><h1>Giỏ hàng <em>của bạn.</em></h1><p>Những món đồ được bạn chọn lựa cẩn thận.</p></div>
+
+<section class="container-wide interior-page"><div class="interior-heading"><h1>Giỏ hàng <em>của bạn.</em></h1></div>
 @if($lines->isEmpty())<div class="empty-state"><x-icon name="shopping-bag" size="54"/><h3>Giỏ hàng đang trống</h3><p>Một chút cảm hứng mới đang chờ bạn phía trước.</p><a class="btn-dark" href="{{ route('shop.index') }}">Khám phá sản phẩm <x-icon name="arrow-right" size="18"/></a></div>
 @else
 <div class="checkout-layout"><div class="cart-lines"><div class="cart-topline"><b>Sản phẩm ({{ $lines->count() }})</b><span>Giá / Số lượng</span></div>

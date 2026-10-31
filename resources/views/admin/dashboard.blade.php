@@ -2,7 +2,7 @@
 @section('title','Tổng quan')
 @section('content')
 <section class="admin-panel report-toolbar">
-    <div><span class="eyebrow">BUSINESS REPORT</span><h1>Tổng quan cửa hàng</h1></div>
+    <div><h1>Tổng quan cửa hàng</h1></div>
     <form method="GET" class="report-filter" data-report-filter>
         <label>Chỉ số<select name="metric"><option value="sales" @selected($metric==='sales')>Doanh thu</option><option value="orders" @selected($metric==='orders')>Số đơn đặt</option></select></label>
         <label>Thời gian<select name="period" data-report-period>

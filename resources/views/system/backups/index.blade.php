@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 @section('title','Sao lưu và phục hồi')
 @section('content')
-<div class="admin-page-header"><div><h1>Sao lưu & phục hồi</h1><p>Lưu bản sao riêng tư trên MinIO, bảo vệ dữ liệu cửa hàng.</p></div></div>
+<div class="admin-page-header"><div><h1>Sao lưu & phục hồi</h1></div></div>
 <div class="admin-panel form-panel mb-4">
 <form method="POST" action="{{ route('system.backups.store') }}" class="workspace-backup-form">@csrf<label>Tên bản sao lưu<input name="label" maxlength="120" value="{{ old('label','Sao lưu '.now()->format('d/m/Y H:i')) }}" required></label><button class="admin-primary" data-submit-once><x-icon name="shield" size="18"/> Tạo bản sao lưu</button></form>
 <p class="muted-cell mt-3 mb-0">Bao gồm 6 bảng nghiệp vụ và ảnh upload đang được sản phẩm tham chiếu. File mã hóa bằng APP_KEY; giữ khóa này để phục hồi. Không chứa .env, mã nguồn, cache hoặc session.</p>

@@ -2,9 +2,9 @@
 @section('title', $newArrivals ? 'Hàng mới về — NEST Market' : ($onSale ? 'Ưu đãi nội thất — NEST Market' : 'Tất cả sản phẩm — NEST Market'))
 @section('content')
 @php($heading=$newArrivals ? 'Hàng mới về' : ($onSale ? 'Ưu đãi cho tổ ấm' : (\App\Models\Product::ROOMS[$filters['room'] ?? ''] ?? 'Bộ sưu tập NEST')))
-<div class="container-wide page-breadcrumb"><a href="{{ route('shop.home') }}">Trang chủ</a><x-icon name="chevron-right" size="14"/><span>{{ $heading }}</span></div>
+
 <section class="container-wide nest-catalog">
-    <header class="nest-catalog-heading"><div><span class="nest-kicker">{{ $newArrivals ? 'NEW ARRIVALS' : ($onSale ? 'NEST SPECIAL OFFERS' : 'FURNITURE & EVERYDAY LIVING') }}</span><h1>{{ $heading }}</h1><p>{{ $newArrivals ? 'Những sản phẩm được thêm trong '.\App\Models\Product::NEW_ARRIVAL_DAYS.' ngày gần đây.' : ($onSale ? 'Các sản phẩm đang có giá ưu đãi, cập nhật trực tiếp từ cửa hàng.' : 'Tìm món nội thất phù hợp với không gian, chất liệu và ngân sách của bạn.') }}</p></div><span>{{ $products->total() }} {{ $newArrivals ? 'sản phẩm mới' : 'sản phẩm' }}</span></header>
+    <header class="nest-catalog-heading"><div><h1>{{ $heading }}</h1></div><span>{{ $products->total() }} {{ $newArrivals ? 'sản phẩm mới' : 'sản phẩm' }}</span></header>
     <div class="nest-catalog-layout">
         <aside class="nest-filters"><details open><summary><span><x-icon name="filter" size="18"/> Bộ lọc sản phẩm</span><x-icon name="chevron-right" size="17"/></summary>
             <form action="{{ route($catalogRoute) }}" method="GET" class="nest-filter-form">

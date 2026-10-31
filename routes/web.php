@@ -37,12 +37,17 @@ Route::middleware(['auth','customer'])->group(function () {
     Route::get('/thanh-toan',[CheckoutController::class,'create'])->name('checkout.create');
     Route::post('/thanh-toan',[CheckoutController::class,'store'])->name('checkout.store')->middleware('throttle:10,1');
     Route::get('/don-hang',[OrderController::class,'index'])->name('orders.index');
+    Route::post('/don-hang/{order}/bao-chuyen-khoan',[\App\Http\Controllers\PaymentController::class,'report'])->name('orders.payment.report')->middleware('throttle:10,1');
+    Route::get('/don-hang/{order}/thanh-toan/trang-thai',[\App\Http\Controllers\PaymentController::class,'status'])->name('orders.payment.status')->middleware('throttle:30,1');
     Route::get('/don-hang/{order}',[OrderController::class,'show'])->name('orders.show');
     Route::get('/don-hang/{order}/nhan-hang',[OrderController::class,'editDelivery'])->name('orders.edit-delivery');
     Route::patch('/don-hang/{order}/nhan-hang',[OrderController::class,'updateDelivery'])->name('orders.update-delivery');
     Route::post('/don-hang/{order}/huy',[OrderController::class,'cancel'])->name('orders.cancel')->middleware('throttle:10,1');
 });
 Route::prefix('quan-ly')->name('manager.')->middleware(['auth','manager'])->group(function () {
+    Route::get('payment-settings',[\App\Http\Controllers\Admin\PaymentSettingController::class,'edit'])->name('payments.settings');
+    Route::put('payment-settings',[\App\Http\Controllers\Admin\PaymentSettingController::class,'update'])->name('payments.settings.update');
+    Route::post('orders/{order}/payment',[\App\Http\Controllers\PaymentController::class,'verify'])->name('orders.payment.verify')->middleware('throttle:20,1');
     Route::get('/',[DashboardController::class,'index'])->name('dashboard');
     Route::resource('categories',AdminCategoryController::class)->except('show');
     Route::post('products/import/scan',[\App\Http\Controllers\Admin\ProductTransferController::class,'scan'])->name('products.import.scan')->middleware('throttle:10,1');

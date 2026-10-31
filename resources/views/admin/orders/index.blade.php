@@ -3,7 +3,7 @@
 @section('content')
 @php($columns=['code'=>'Thông tin đơn hàng','created_at'=>'Thời gian tạo','status'=>'Trạng thái','recipient_name'=>'Khách hàng','total'=>'Tổng tiền','shipping_fee'=>'Phí giao hàng','payment'=>'Thanh toán','address'=>'Địa chỉ giao hàng'])
 <section data-order-workspace>
-<div class="admin-page-header"><div><h1>Hóa đơn / Đơn hàng</h1><p>Theo dõi đơn mua hàng, xác nhận và giao hàng cho khách.</p></div></div>
+<div class="admin-page-header"><div><h1>Hóa đơn / Đơn hàng</h1></div></div>
 <div class="product-toolbar order-toolbar">
 <div class="catalog-search product-toolbar-search"><x-icon name="search" size="18"/><input form="order-filters" type="search" name="q" value="{{ request('q') }}" placeholder="Mã đơn, tên khách, điện thoại, email..." aria-label="Tìm đơn hàng"><button form="order-filters" aria-label="Tìm kiếm đơn hàng"><x-icon name="search" size="17"/></button></div>
 <button class="admin-secondary" type="button" data-order-export><x-icon name="download" size="17"/> Xuất file</button>
@@ -41,7 +41,7 @@
 <td data-order-col="status"><span class="status status-{{ $order->status }}">{{ $order->status_label }}</span></td>
 <td data-order-col="recipient_name"><strong>{{ $order->recipient_name }}</strong><small class="order-cell-sub">{{ $order->phone }}</small></td>
 <td data-order-col="total" class="table-strong product-number">{{ number_format($order->total,0,',','.') }}₫</td><td data-order-col="shipping_fee" class="product-number">{{ number_format($order->shipping_fee,0,',','.') }}₫</td>
-<td data-order-col="payment">COD<small class="order-cell-sub">Thanh toán khi nhận hàng</small></td><td data-order-col="address" class="order-address-cell">{{ $order->shipping_address }}</td>
+<td data-order-col="payment">{{ $order->payment_method_label }}<small class="order-cell-sub">{{ $order->payment_label }}</small></td><td data-order-col="address" class="order-address-cell">{{ $order->shipping_address }}</td>
 <td><a class="table-detail-link" data-order-detail href="{{ route('manager.orders.show',$order) }}" aria-label="Xem đơn {{ $order->code }}"><x-icon name="arrow-right" size="17"/></a></td>
 </tr>@empty<tr><td colspan="10"><div class="order-empty"><x-icon name="package" size="32"/><strong>Không tìm thấy đơn hàng</strong><span>Thử thay đổi từ khóa hoặc khoảng thời gian.</span></div></td></tr>@endforelse
 </tbody></table></div><div class="admin-pagination">{{ $orders->links() }}</div></div>

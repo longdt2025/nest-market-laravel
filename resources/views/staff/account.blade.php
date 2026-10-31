@@ -2,7 +2,7 @@
 @section('title','Thông tin tài khoản')
 @section('content')
 <section class="{{ auth()->user()->role === 'customer'?'container-wide interior-page':'' }}">
-<div class="admin-page-header"><div><h1>Tài khoản của tôi</h1><p>Quản lý thông tin cá nhân và bảo mật đăng nhập.</p></div></div>
+<div class="admin-page-header"><div><h1>Tài khoản của tôi</h1></div></div>
 <div class="admin-form-grid">
     <div class="admin-panel form-panel">
         <h2>Cập nhật thông tin</h2><p class="muted-cell">{{ $account->role_label }} · {{ $account->email }}</p>

@@ -54,7 +54,7 @@ class OrderController extends Controller
             $sheet = $book->getActiveSheet()->setTitle('Don hang');
             $sheet->fromArray(['Mã đơn', 'Ngày tạo', 'Khách hàng', 'Điện thoại', 'Email', 'Địa chỉ', 'Trạng thái', 'Số mặt hàng', 'Tạm tính', 'Phí giao hàng', 'Tổng tiền', 'Thanh toán', 'Ghi chú']);
             foreach ($orders as $i => $order) {
-                $values = [$order->code, $order->created_at->format('d/m/Y H:i'), $order->recipient_name, $order->phone, $order->user?->email, $order->shipping_address, $order->status_label, $order->items_count, $order->subtotal, $order->shipping_fee, $order->total, 'COD', $order->note];
+                $values = [$order->code, $order->created_at->format('d/m/Y H:i'), $order->recipient_name, $order->phone, $order->user?->email, $order->shipping_address, $order->status_label, $order->items_count, $order->subtotal, $order->shipping_fee, $order->total, $order->payment_method_label.' / '.$order->payment_label, $order->note];
                 foreach ($values as $j => $value) {
                     $sheet->setCellValueExplicit([$j + 1, $i + 2], $value ?? '', in_array($j, [7, 8, 9, 10]) ? DataType::TYPE_NUMERIC : DataType::TYPE_STRING);
                 }

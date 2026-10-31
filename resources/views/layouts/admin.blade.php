@@ -27,6 +27,7 @@
                 <a href="{{ route('manager.orders.index') }}" @class(['active'=>request()->routeIs('manager.orders.*')])><x-icon name="shopping-bag" size="23"/><span>Đơn hàng</span></a>
                 <a href="{{ route('manager.products.index') }}" @class(['active'=>request()->routeIs('manager.products.*')])><x-icon name="package" size="23"/><span>Sản phẩm</span></a>
                 <a href="{{ route('manager.categories.index') }}" @class(['active'=>request()->routeIs('manager.categories.*')])><x-icon name="list" size="23"/><span>Danh mục</span></a>
+                <a href="{{ route('manager.payments.settings') }}" @class(['active'=>request()->routeIs('manager.payments.*')])><x-icon name="grid" size="23"/><span>Thanh toán</span></a>
             @endif
         </nav>
         <div class="side-bottom"><a href="{{ route('shop.home') }}"><x-icon name="arrow-right" size="20"/><span>Xem cửa hàng</span></a></div>
@@ -37,7 +38,7 @@
             <div class="workspace-context"><strong>NEST Market</strong><span>{{ $system?'Quản trị hệ thống':'Quản lý cửa hàng' }}</span></div>
             <div class="workspace-header-right"><span class="workspace-role">{{ auth()->user()->role_label }}</span><x-workspace-account/></div>
         </header>
-        <div class="admin-page"><div class="workspace-breadcrumb">{{ $system?'Hệ thống':'Cửa hàng' }} <span>/</span> @yield('title','Tổng quan')</div><main class="admin-content">@yield('content')</main></div>
+        <div class="admin-page"><main class="admin-content">@yield('content')</main></div>
     </div>
 </div>
 <x-notifications/><x-confirm-dialog/>

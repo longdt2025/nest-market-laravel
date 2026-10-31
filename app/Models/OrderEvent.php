@@ -18,6 +18,7 @@ class OrderEvent extends Model
     {
         return match ($this->type) {
             'placed' => 'Đã đặt hàng',
+            'payment' => 'Cập nhật thanh toán',
             'delivery_updated' => 'Đã cập nhật thông tin nhận hàng',
             'legacy' => 'Bắt đầu theo dõi · '.(Order::LABELS[$this->status] ?? $this->status),
             default => Order::LABELS[$this->status] ?? $this->status,

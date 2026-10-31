@@ -2,7 +2,7 @@
 @section('title', 'Sửa thông tin nhận hàng — NEST Market')
 @section('content')
 <section class="container-wide interior-page account-page">
-    <div class="interior-heading"><span class="eyebrow">ORDER / {{ $order->code }}</span><h1>Sửa thông tin <em>nhận hàng.</em></h1><p>Bạn có thể cập nhật khi đơn đang chờ xác nhận. Thay đổi này chỉ áp dụng cho đơn {{ $order->code }}.</p></div>
+    <div class="interior-heading"><h1>Sửa thông tin <em>nhận hàng.</em></h1></div>
     <form method="POST" action="{{ route('orders.update-delivery', $order) }}" class="info-block form-stack delivery-edit-form">@csrf @method('PATCH')
         <label><span class="field-label">Người nhận <span>*</span></span><input name="recipient_name" value="{{ old('recipient_name', $order->recipient_name) }}" required minlength="2" maxlength="120" autocomplete="shipping name"></label>
         <label><span class="field-label">Số điện thoại <span>*</span></span><input type="tel" name="phone" value="{{ old('phone', $order->phone) }}" required maxlength="20" autocomplete="shipping tel"></label>

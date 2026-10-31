@@ -138,14 +138,15 @@
  const confirmDialog=document.querySelector('#confirm-dialog');
  const approvedForms=new WeakSet();
  let pendingSubmission=null;
- document.querySelectorAll('form[data-confirm]').forEach(form=>form.addEventListener('submit',event=>{
+ document.addEventListener('submit',event=>{
+   const form=event.target.closest('form[data-confirm]');if(!form)return;
    if(approvedForms.has(form)){approvedForms.delete(form);return;}
    if(!confirmDialog?.showModal){if(!window.confirm(form.dataset.confirm||'Bạn chắc chắn muốn thực hiện?'))event.preventDefault();return;}
    event.preventDefault();
    pendingSubmission={form,submitter:event.submitter};
    confirmDialog.querySelector('[data-confirm-message]').textContent=form.dataset.confirm||'Bạn chắc chắn muốn thực hiện?';
    confirmDialog.showModal();
- }));
+ });
  confirmDialog?.querySelector('[data-confirm-cancel]')?.addEventListener('click',()=>confirmDialog.close());
  confirmDialog?.addEventListener('cancel',()=>{pendingSubmission=null;});
  confirmDialog?.addEventListener('close',()=>{pendingSubmission=null;});
@@ -160,17 +161,19 @@
    const file=upload.files?.[0];const target=document.getElementById(upload.dataset.imagePreview);
    if(file&&target){if(!file.type.startsWith('image/'))return showToast('Vui lòng chọn tệp ảnh.',true);target.src=URL.createObjectURL(file);}
  });
- const onceForms=new Set([...document.querySelectorAll('[data-submit-once]')].map(btn=>btn.form).filter(Boolean));
- onceForms.forEach(form=>form.addEventListener('submit',event=>{
-   if(event.defaultPrevented)return;
+ const onceForms=new Set();
+ document.addEventListener('submit',event=>{
+   const form=event.target;
+   if(event.defaultPrevented||!form.querySelector('[data-submit-once]'))return;
    if(form.dataset.submitting==='true'){event.preventDefault();return;}
-   form.dataset.submitting='true';
-   [...form.elements].filter(el=>el.hasAttribute('data-submit-once')).forEach(btn=>{btn.disabled=true;btn.setAttribute('aria-busy','true');});
- }));
+   onceForms.add(form);form.dataset.submitting='true';
+   // Keep submitter values in native POST payloads while blocking repeated clicks.
+   form.querySelectorAll('[data-submit-once]').forEach(btn=>{btn.setAttribute('aria-disabled','true');btn.setAttribute('aria-busy','true');});
+ });
  // Restore buttons when navigating back from a completed checkout.
  window.addEventListener('pageshow',()=>onceForms.forEach(form=>{
    delete form.dataset.submitting;
-   [...form.elements].filter(el=>el.hasAttribute('data-submit-once')).forEach(btn=>{btn.disabled=false;btn.setAttribute('aria-busy','false');});
+   [...form.elements].filter(el=>el.hasAttribute('data-submit-once')).forEach(btn=>{btn.removeAttribute('aria-disabled');btn.setAttribute('aria-busy','false');});
  }));
  if(!reducedMotion.matches&&'IntersectionObserver' in window){
    const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{

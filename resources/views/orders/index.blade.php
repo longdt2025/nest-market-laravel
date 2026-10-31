@@ -1,6 +1,6 @@
 @extends('layouts.store')
 @section('title','Đơn hàng của tôi — NEST Market')
 @section('content')
-<div class="container-wide page-breadcrumb"><a href="{{ route('shop.home') }}">Trang chủ</a><x-icon name="chevron-right" size="14"/><span>Đơn hàng</span></div><section class="container-wide interior-page"><div class="interior-heading"><span class="eyebrow">MY ACCOUNT / ORDERS</span><h1>Đơn hàng <em>của tôi.</em></h1><p>Xin chào {{ auth()->user()->name }}, đây là những đơn hàng của bạn.</p></div>
+<section class="container-wide interior-page"><div class="interior-heading"><h1>Đơn hàng <em>của tôi.</em></h1></div>
 <x-account-nav />@if($orders->isEmpty())<div class="empty-state"><x-icon name="package" size="50"/><h3>Bạn chưa có đơn hàng</h3><p>Hãy chọn một món đồ thật ưng ý để bắt đầu nhé.</p><a href="{{ route('shop.index') }}" class="btn-dark">Khám phá sản phẩm</a></div>@else<div class="order-list">@foreach($orders as $order)<a href="{{ route('orders.show',$order) }}" class="user-order-card"><div><span class="eyebrow">{{ $order->created_at->format('d/m/Y · H:i') }}</span><h3>{{ $order->code }}</h3><small>{{ $order->items_count }} sản phẩm</small></div><div class="user-order-summary"><span class="status status-{{ $order->status }}">{{ $order->status_label }}</span><strong>{{ number_format($order->total,0,',','.') }}₫</strong></div><x-icon name="chevron-right" size="21"/></a>@endforeach</div><div class="pagination-wrap">{{ $orders->links() }}</div>@endif</section>
 @endsection

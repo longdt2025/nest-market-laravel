@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 @section('title','Tổng quan hệ thống')
 @section('content')
-<div class="admin-page-header"><div><span class="eyebrow">SYSTEM ADMINISTRATION</span><h1>Quản trị hệ thống</h1><p>Tài khoản, phân quyền và an toàn dữ liệu của NEST Market.</p></div><a class="admin-primary" href="{{ route('system.accounts.create') }}"><x-icon name="plus" size="18"/> Tạo tài khoản</a></div>
+<div class="admin-page-header"><div><h1>Quản trị hệ thống</h1></div><a class="admin-primary" href="{{ route('system.accounts.create') }}"><x-icon name="plus" size="18"/> Tạo tài khoản</a></div>
 <div class="stats-grid">
     <div class="stat-card"><span>Tổng tài khoản</span><strong>{{ $accountCount }}</strong><small>Đã đăng ký trong hệ thống</small></div>
     <div class="stat-card"><span>Quản lý cửa hàng</span><strong>{{ $managerCount }}</strong><small>Phụ trách hoạt động kinh doanh</small></div>

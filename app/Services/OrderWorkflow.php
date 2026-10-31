@@ -25,12 +25,15 @@ class OrderWorkflow
                 throw ValidationException::withMessages(['status' => 'Trạng thái đơn đã thay đổi hoặc thao tác không hợp lệ. Vui lòng tải lại trang.']);
             }
             $previous = $locked->status;
+            if ($locked->payment_method === 'bank_transfer' && in_array($status, ['shipping', 'delivered']) && $locked->payment_status !== 'paid') {
+                throw ValidationException::withMessages(['payment' => 'Cần xác nhận đã nhận tiền chuyển khoản trước khi giao hàng.']);
+            }
             if ($status === 'cancelled') {
                 foreach ($locked->items()->orderBy('product_id')->get() as $item) {
                     Product::whereKey($item->product_id)->increment('stock', $item->quantity);
                 }
             }
-            $locked->update(['status' => $status]);
+            $locked->update(['status' => $status] + ($status === 'cancelled' && $locked->payment_status === 'paid' ? ['payment_status' => 'refund_required'] : []));
             $locked->events()->create([
                 'actor_id' => $actor->id, 'actor_role' => $actor->role,
                 'type' => 'status_changed', 'from_status' => $previous, 'status' => $status,

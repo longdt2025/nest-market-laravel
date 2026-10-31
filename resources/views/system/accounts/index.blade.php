@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 @section('title','Quản lý tài khoản')
 @section('content')
-<div class="admin-page-header"><div><h1>Quản lý tài khoản</h1><p>Kiểm soát vai trò và trạng thái truy cập.</p></div><a href="{{ route('system.accounts.create') }}" class="admin-primary"><x-icon name="plus" size="18"/> Tạo tài khoản</a></div>
+<div class="admin-page-header"><div><h1>Quản lý tài khoản</h1></div><a href="{{ route('system.accounts.create') }}" class="admin-primary"><x-icon name="plus" size="18"/> Tạo tài khoản</a></div>
 <div class="admin-panel">
 <form class="admin-filters" method="GET">
     <div class="catalog-search"><x-icon name="search" size="18"/><input name="q" value="{{ request('q') }}" placeholder="Tên, email hoặc tài khoản"></div>

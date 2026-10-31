@@ -1,7 +1,7 @@
 @extends('layouts.admin')
 @section('title',$account->exists?'Chỉnh sửa tài khoản':'Tạo tài khoản')
 @section('content')
-<div class="admin-page-header"><div><h1>{{ $account->exists?'Chỉnh sửa tài khoản':'Tạo tài khoản' }}</h1><p>Cấp quyền theo trách nhiệm của từng người sử dụng.</p></div><a href="{{ route('system.accounts.index') }}" class="admin-secondary">Quay lại</a></div>
+<div class="admin-page-header"><div><h1>{{ $account->exists?'Chỉnh sửa tài khoản':'Tạo tài khoản' }}</h1></div><a href="{{ route('system.accounts.index') }}" class="admin-secondary">Quay lại</a></div>
 <div class="admin-panel form-panel workspace-form">
 <form method="POST" action="{{ $account->exists?route('system.accounts.update',$account):route('system.accounts.store') }}" class="form-stack">@csrf @if($account->exists) @method('PUT') @endif
 <div class="row g-3">

@@ -1,7 +1,7 @@
 @extends('layouts.store')
 @section('title',$product->name.' — NEST Market')
 @section('content')
-<div class="container-wide page-breadcrumb"><a href="{{ route('shop.home') }}">Trang chủ</a><x-icon name="chevron-right" size="14"/><a href="{{ route('shop.index',['room'=>$product->room]) }}">{{ $product->room_label }}</a><x-icon name="chevron-right" size="14"/><span>{{ $product->name }}</span></div>
+
 <section class="container-wide nest-product-detail">
     <div class="nest-gallery" data-product-gallery><button type="button" class="nest-gallery-main" data-gallery-zoom aria-label="Phóng to ảnh sản phẩm"><img data-gallery-main src="{{ $product->image_url }}" alt="{{ $product->name }}" onerror="this.onerror=null;this.src='{{ asset('images/product-fallback.svg') }}'"><span><x-icon name="search" size="18"/> Xem ảnh lớn</span></button>
         <div class="nest-gallery-thumbs" aria-label="Ảnh sản phẩm">@foreach($product->gallery_urls as $image)<button type="button" data-gallery-thumb data-src="{{ $image }}" aria-label="Xem ảnh {{ $loop->iteration }}" aria-pressed="{{ $loop->first ? 'true' : 'false' }}" class="{{ $loop->first ? 'selected' : '' }}"><img src="{{ $image }}" alt="Góc nhìn {{ $loop->iteration }} của {{ $product->name }}" loading="lazy"></button>@endforeach</div>

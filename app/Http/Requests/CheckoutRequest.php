@@ -11,7 +11,7 @@ class CheckoutRequest extends DeliveryDetailsRequest
 
     public function rules(): array
     {
-        return parent::rules() + ['checkout_token' => ['required', 'uuid'], 'save_address' => ['nullable', 'boolean']];
+        return parent::rules() + ['checkout_token' => ['required', 'uuid'], 'save_address' => ['nullable', 'boolean'], 'payment_method' => ['nullable', 'in:cod,bank_transfer']];
     }
 
     public function messages(): array

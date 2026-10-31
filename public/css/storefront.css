@@ -25,6 +25,11 @@
 .nest-logout{position:absolute;top:100%;right:0;margin-top:4px}
 .nest-logout button{background:none;border:0;font-size:9px;color:#8b9490;padding:0}
 .nest-cart{display:flex;align-items:center;gap:9px;font-size:11px;white-space:nowrap}
+.nest-header-actions{display:flex;align-items:center;gap:24px;flex-shrink:0}
+.nest-orders{display:flex;align-items:center;gap:9px;font-size:11px;white-space:nowrap;color:#39494d}
+.nest-orders:hover,.nest-orders.active{color:var(--accent)}
+@media(max-width:900px){.nest-orders>span{display:none}.nest-header-actions{gap:16px}}
+@media(max-width:760px){.furniture-store .nest-masthead{grid-template-columns:28px minmax(0,1fr) 30px 70px}.nest-header-actions{grid-column:4;grid-row:1;justify-content:flex-end}}
 .nest-cart-icon{position:relative;display:flex}
 .nest-cart-icon b{position:absolute;right:-6px;top:-7px;background:var(--accent);color:#fff;font-size:9px;min-width:17px;height:17px;border-radius:50%;display:grid;place-items:center;border:2px solid white;padding:0 2px}
 .nest-nav{display:flex;align-items:center;gap:28px;height:47px;overflow-x:auto;scrollbar-width:none}
@@ -223,3 +228,5 @@
 @keyframes nest-page-out{to{opacity:0}}
 @keyframes nest-page-in{from{opacity:0}to{opacity:1}}
 @media(prefers-reduced-motion:reduce){.nest-hero-slide.hero-enter,.furniture-store main,::view-transition-old(root),::view-transition-new(root){animation:none}.furniture-store .reveal-pending{opacity:1;transform:none}.nest-room-card img,.furniture-card .product-image img,.nest-gallery-main>img,.nest-nav>a:after,.furniture-store button,.furniture-store .btn-dark,.furniture-store .btn-outline-dark,.furniture-card,.furniture-store .reveal-pending{transition:none}}
+
+.nest-catalog-heading{align-items:center;padding-bottom:22px;margin-bottom:25px}.nest-catalog-heading h1{margin:0}.nest-catalog{padding-top:30px}.furniture-store .interior-page{padding-top:30px}.auth-form-box h1{margin-bottom:24px}

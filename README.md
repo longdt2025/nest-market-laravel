@@ -1,7 +1,5 @@
 ## Công nghệ và phạm vi
 
-| Thành phần | Hiện trạng |
-| --- | --- |
 | Backend | PHP 8.2+, Laravel 12, Eloquent ORM, kiến trúc MVC |
 | Frontend | Blade, JavaScript thuần/Fetch API, Bootstrap 5.3.3, CSS tùy chỉnh |
 | Database | MySQL 8.4 trong Docker |
@@ -56,8 +54,6 @@ Seeder tạo bản ghi còn thiếu, giữ các chỉnh sửa tài khoản/sản
 
 ### Cổng và dữ liệu
 
-| Dịch vụ | Địa chỉ |
-| --- | --- |
 | Website | http://localhost:8082 |
 | Laravel kết nối MySQL trong Docker | mysql:3306 |
 | DBeaver/HeidiSQL kết nối từ máy host | 127.0.0.1:13306 |

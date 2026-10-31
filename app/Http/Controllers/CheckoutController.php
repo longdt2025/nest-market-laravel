@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CheckoutRequest;
 use App\Models\Order;
+use App\Models\PaymentSetting;
 use App\Models\Product;
 use App\Models\User;
 use App\Support\Cart;
@@ -67,13 +68,20 @@ class CheckoutController extends Controller
                 $subtotal += $line;
             }
             $shipping = self::shipping($subtotal);
+            $paymentMethod = $data['payment_method'] ?? 'cod';
+            $bank = $paymentMethod === 'bank_transfer' ? PaymentSetting::active() : null;
+            if ($paymentMethod === 'bank_transfer' && ! $bank) {
+                throw ValidationException::withMessages(['payment_method' => 'Chuyển khoản hiện chưa khả dụng. Vui lòng chọn COD.']);
+            }
             $order = Order::create([
                 'code' => 'NS-'.now()->format('ymd').'-'.strtoupper(Str::random(8)),
                 'checkout_token' => $data['checkout_token'],
                 'user_id' => $request->user()->id, 'recipient_name' => $data['recipient_name'], 'phone' => $data['phone'],
                 'shipping_address' => $data['shipping_address'], 'note' => $data['note'] ?? null,
                 'subtotal' => $subtotal, 'shipping_fee' => $shipping, 'total' => $subtotal + $shipping,
-                'payment_method' => 'cod', 'status' => 'pending',
+                'payment_method' => $paymentMethod, 'status' => 'pending',
+                'payment_status' => 'unpaid', 'payment_qr_path' => $bank?->qr_path,
+                'payment_details' => $bank ? ['bank_name' => $bank->bank_name, 'bank_bin' => $bank->bank_bin, 'account_number' => $bank->account_number, 'account_holder' => $bank->account_holder] : null,
             ]);
             foreach ($lines as $line) {
                 $product = $line['product'];

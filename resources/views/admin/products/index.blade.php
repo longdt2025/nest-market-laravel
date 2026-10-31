@@ -4,7 +4,7 @@
 @php($sortFields=['code'=>'code','name'=>'name','barcode'=>'barcode','unit'=>'unit','category'=>'category','room'=>'room','cost'=>'cost_price','vat'=>'vat_rate','price'=>'price','stock'=>'stock','status'=>'is_active'])
 @php($columns=['code'=>'Mã hàng','name'=>'Tên hàng','barcode'=>'Barcode','unit'=>'ĐVT','category'=>'Nhóm hàng','room'=>'Loại hàng','cost'=>'Giá vốn','vat'=>'VAT','price'=>'Giá bán','stock'=>'Tồn kho','status'=>'Trạng thái'])
 <section data-product-workspace>
-<div class="admin-page-header"><div><h1>Sản phẩm</h1><p>Danh sách hàng hóa và tồn kho của cửa hàng.</p></div></div>
+<div class="admin-page-header"><div><h1>Sản phẩm</h1></div></div>
 <div class="product-management-layout">
 <aside class="product-filter-panel">
     <details open><summary><x-icon name="filter" size="17"/> Bộ lọc sản phẩm</summary>

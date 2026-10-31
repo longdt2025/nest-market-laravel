@@ -2,7 +2,7 @@
 @section('title', 'Tài khoản của tôi — NEST Market')
 @section('content')
 <section class="container-wide interior-page account-page">
-    <div class="interior-heading"><span class="eyebrow">MY ACCOUNT / PROFILE</span><h1>Tài khoản <em>của tôi.</em></h1><p>Lưu thông tin để lần mua tiếp theo thuận tiện hơn.</p></div>
+    <div class="interior-heading"><h1>Tài khoản <em>của tôi.</em></h1></div>
     <x-account-nav />
     <div class="profile-layout">
         <form method="POST" action="{{ route('profile.update') }}" class="info-block form-stack">@csrf @method('PATCH')

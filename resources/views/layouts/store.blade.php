@@ -25,7 +25,12 @@
                 <a href="{{ route('login') }}" aria-label="Đăng nhập"><x-icon name="user" size="22"/><span>Đăng nhập</span></a>
                 @endauth
             </div>
-            <a href="{{ route('cart.index') }}" class="nest-cart" aria-label="Giỏ hàng"><span class="nest-cart-icon"><x-icon name="shopping-bag" size="26"/><b data-cart-count>{{ \App\Support\Cart::count() }}</b></span><span>Giỏ hàng</span></a>
+            <div class="nest-header-actions">
+                @if(!auth()->check() || auth()->user()->role === 'customer')
+                <a href="{{ route('orders.index') }}" class="nest-orders {{ request()->routeIs('orders.*') ? 'active' : '' }}" aria-label="Đơn hàng của tôi" @if(request()->routeIs('orders.*')) aria-current="page" @endif><x-icon name="package" size="24"/><span>Đơn hàng của tôi</span></a>
+                @endif
+                <a href="{{ route('cart.index') }}" class="nest-cart" aria-label="Giỏ hàng"><span class="nest-cart-icon"><x-icon name="shopping-bag" size="26"/><b data-cart-count>{{ \App\Support\Cart::count() }}</b></span><span>Giỏ hàng</span></a>
+            </div>
         </div>
         <nav class="container-wide nest-nav" aria-label="Điều hướng chính">
             <a href="{{ route('shop.index') }}" class="{{ request()->routeIs('shop.index','shop.show') && !request('room') ? 'active' : '' }}">Tất cả sản phẩm</a>
@@ -41,7 +46,7 @@
             @auth
                 @if(auth()->user()->isAdmin())<a href="{{ route('system.dashboard') }}">Trang quản trị</a>@elseif(auth()->user()->isManager())<a href="{{ route('manager.dashboard') }}">Quản lý cửa hàng</a>@else<a href="{{ route('profile.edit') }}">Hồ sơ & địa chỉ</a><a href="{{ route('orders.index') }}">Đơn hàng của tôi</a>@endif
                 <form method="POST" action="{{ route('logout') }}">@csrf<button type="submit" class="nest-mobile-logout">Đăng xuất</button></form>
-            @else<a href="{{ route('login') }}">Đăng nhập / Đăng ký</a>@endauth
+            @else<a href="{{ route('orders.index') }}">Đơn hàng của tôi</a><a href="{{ route('login') }}">Đăng nhập / Đăng ký</a>@endauth
         </div>
     </header>
     <main>@yield('content')</main>
