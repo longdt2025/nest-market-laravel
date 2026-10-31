@@ -5,6 +5,12 @@
   if (hero) {
     const slides = [...hero.querySelectorAll('[data-hero-slide]')];
     let index = 0;
+    let timer;
+    const restart = () => {
+      clearInterval(timer);
+      if (slides.length < 2 || document.hidden || reduced.matches || hero.matches(':hover') || hero.contains(document.activeElement)) return;
+      timer = setInterval(() => show(index + 1), 4000);
+    };
     const show = next => {
       index = (next + slides.length) % slides.length;
       slides.forEach((slide, i) => {
@@ -13,8 +19,17 @@
       });
       hero.querySelector('[data-hero-position]').textContent = `${String(index + 1).padStart(2, '0')} / ${String(slides.length).padStart(2, '0')}`;
     };
-    hero.querySelector('[data-hero-prev]')?.addEventListener('click', () => show(index - 1));
-    hero.querySelector('[data-hero-next]')?.addEventListener('click', () => show(index + 1));
+    hero.querySelector('[data-hero-prev]')?.addEventListener('click', () => { show(index - 1); restart(); });
+    hero.querySelector('[data-hero-next]')?.addEventListener('click', () => { show(index + 1); restart(); });
+    hero.addEventListener('mouseenter', () => clearInterval(timer));
+    hero.addEventListener('mouseleave', restart);
+    hero.addEventListener('focusin', () => clearInterval(timer));
+    hero.addEventListener('focusout', () => setTimeout(restart, 0));
+    document.addEventListener('visibilitychange', restart);
+    reduced.addEventListener('change', restart);
+    window.addEventListener('pagehide', () => clearInterval(timer));
+    window.addEventListener('pageshow', restart);
+    restart();
   }
   const filters = document.querySelector('.nest-filters details');
   if (filters && window.matchMedia('(max-width:760px)').matches) filters.open = false;

@@ -23,7 +23,7 @@
         <div class="nest-catalog-results">
             <form class="nest-catalog-toolbar" action="{{ route($catalogRoute) }}" method="GET">
                 @foreach($filters as $key=>$value)@unless(in_array($key,['q','sort']))<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endunless @endforeach
-                <div class="nest-catalog-search"><x-icon name="search" size="18"/><input name="q" value="{{ request('q') }}" placeholder="Tìm trong bộ sưu tập…" aria-label="Tìm tên sản phẩm"><button type="submit">Tìm</button></div>
+                <div class="nest-catalog-search"><x-icon name="search" size="18"/><input name="q" maxlength="100" value="{{ request('q') }}" placeholder="Tìm trong bộ sưu tập…" aria-label="Tìm tên sản phẩm"><button type="submit">Tìm</button></div>
                 <label>Sắp xếp<select name="sort" aria-label="Sắp xếp sản phẩm" onchange="this.form.requestSubmit()"><option value="newest" @selected(request('sort','newest')==='newest')>Mới nhất</option><option value="price_asc" @selected(request('sort')==='price_asc')>Giá thấp đến cao</option><option value="price_desc" @selected(request('sort')==='price_desc')>Giá cao đến thấp</option><option value="name" @selected(request('sort')==='name')>Tên A–Z</option></select></label>
             </form>
             @if(request('q'))<p class="nest-search-result">Kết quả cho “<strong>{{ request('q') }}</strong>”</p>@endif
@@ -33,3 +33,4 @@
     </div>
 </section>
 @endsection
+@push('scripts')<script src="{{ asset('js/catalog-search.js') }}?v={{ filemtime(public_path('js/catalog-search.js')) }}" defer></script>@endpush

@@ -60,5 +60,6 @@
     <x-notifications /><x-confirm-dialog />
     <script src="{{ asset('js/app.js') }}?v={{ filemtime(public_path('js/app.js')) }}" defer></script>
     <script src="{{ asset('js/storefront.js') }}?v={{ filemtime(public_path('js/storefront.js')) }}" defer></script>
+    <script src="{{ asset('js/header-search.js') }}?v={{ filemtime(public_path('js/header-search.js')) }}" defer></script>
     @stack('scripts')
 <script src="{{ asset('js/workspace.js') }}?v={{ filemtime(public_path('js/workspace.js')) }}" defer></script></body></html>

@@ -15,14 +15,14 @@
 </section>
 <section class="admin-panel report-panel">
     <div class="report-heading">
-        <div><h2>{{ $metric==='sales'?'Biểu đồ doanh thu':'Biểu đồ số đơn đặt' }}</h2><p>{{ \Carbon\Carbon::parse($from)->format('d/m/Y') }} — {{ \Carbon\Carbon::parse($to)->format('d/m/Y') }} · Theo {{ $monthly?'tháng':'ngày' }}</p></div>
+        <div><h2>{{ $metric==='sales'?'Biểu đồ doanh thu':'Biểu đồ số đơn đặt' }}</h2><p>{{ \Carbon\Carbon::parse($from)->format('d/m/Y') }} — {{ \Carbon\Carbon::parse($to)->format('d/m/Y') }} · Theo {{ $groupLabel }}</p></div>
         <span class="report-legend"><i></i>{{ $metric==='sales'?'Doanh thu đơn đã giao':'Tất cả đơn được đặt' }}</span>
     </div>
     <p class="report-description">{{ $metric==='sales'?'Doanh thu được nhóm theo ngày đặt, chỉ tính đơn đã giao thành công.':'Số đơn theo ngày đặt, gồm tất cả trạng thái.' }}</p>
     <div class="report-chart-scroll" data-report-chart data-unit="{{ $metric==='sales'?'đ':'đơn' }}" data-series-label="{{ $metric==='sales'?'Doanh thu':'Số đơn đặt' }}">
         <svg class="report-line-chart" viewBox="0 0 1000 370" role="img" aria-labelledby="report-chart-title report-chart-description">
             <title id="report-chart-title">{{ $metric==='sales'?'Doanh thu đơn đã giao':'Số đơn được đặt' }}</title>
-            <desc id="report-chart-description">Biểu đồ theo {{ $monthly?'tháng':'ngày' }} trong khoảng {{ $from }} đến {{ $to }}. Di chuyển tới từng điểm để xem số liệu.</desc>
+            <desc id="report-chart-description">Biểu đồ theo {{ $groupLabel }} trong khoảng {{ $from }} đến {{ $to }}. Di chuyển tới từng điểm để xem số liệu.</desc>
             <defs><clipPath id="report-reveal"><rect class="report-reveal-mask" x="0" y="0" width="1000" height="370"/></clipPath><linearGradient id="report-area" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#c6683d" stop-opacity=".13"/><stop offset="100%" stop-color="#c6683d" stop-opacity=".01"/></linearGradient></defs>
             @for($tick=0;$tick<=4;$tick++)
                 @php($value=$ceiling*$tick/4)

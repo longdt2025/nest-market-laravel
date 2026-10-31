@@ -87,7 +87,8 @@
    const value=Number(input.value)||1;const min=Number(input.min)||1;const max=Number(input.max)||100;
    input.value=Math.min(max,Math.max(min,value+(b.hasAttribute('data-qty-plus')?1:-1)));
  }));
- document.querySelectorAll('form[data-ajax-cart]').forEach(form=>form.addEventListener('submit',async(event)=>{
+ document.addEventListener('submit',async(event)=>{
+   const form=event.target.closest('form[data-ajax-cart]');if(!form)return;
    if(!window.fetch||!csrf)return;
    event.preventDefault(); const button=event.submitter||form.querySelector('button[type="submit"],button:not([type])');if(form.dataset.busy==='true')return;
    const buyNow=button?.hasAttribute('data-buy-now');
@@ -101,7 +102,7 @@
      showToast(data.message||'Đã thêm vào giỏ hàng.');
    }catch(_){showToast('Kết nối có vấn đề. Vui lòng thử lại.',true)}
    finally{setBusy(form,button,false);}
- }));
+ });
  document.querySelectorAll('form[data-ajax-qty]').forEach(form=>form.addEventListener('submit',async(event)=>{
    if(!window.fetch||!csrf)return;
    event.preventDefault();const button=form.querySelector('button[type="submit"]');

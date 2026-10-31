@@ -50,15 +50,22 @@ class OrderWorkflow
             if ($locked->status !== 'pending') {
                 throw ValidationException::withMessages(['order' => 'Cửa hàng đã xử lý đơn. Bạn chỉ có thể sửa thông tin khi đơn đang chờ xác nhận.']);
             }
+            $before = $locked->only(['recipient_name', 'phone', 'shipping_address', 'note']);
             $locked->fill(Arr::only($data, ['recipient_name', 'phone', 'shipping_address', 'note']));
             if (! $locked->isDirty()) {
                 return;
+            }
+            $changes = [];
+            foreach (['recipient_name' => 'Người nhận', 'phone' => 'Điện thoại', 'shipping_address' => 'Địa chỉ', 'note' => 'Ghi chú'] as $field => $label) {
+                if ($locked->isDirty($field)) {
+                    $changes[] = $label.': '.($before[$field] ?: '(trống)').' → '.($locked->$field ?: '(trống)');
+                }
             }
             $locked->save();
             $locked->events()->create([
                 'actor_id' => $customer->id, 'actor_role' => 'customer',
                 'type' => 'delivery_updated', 'status' => $locked->status,
-                'note' => 'Khách hàng cập nhật thông tin nhận hàng trước khi cửa hàng xác nhận.',
+                'note' => implode("\n", $changes),
             ]);
         }, 3);
     }

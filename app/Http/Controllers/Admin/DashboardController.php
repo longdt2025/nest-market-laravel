@@ -31,13 +31,20 @@ class DashboardController extends Controller
             throw ValidationException::withMessages(['from' => 'Chọn khoảng thời gian hợp lệ, tối đa một năm.']);
         }
         $orders = Order::whereBetween('created_at', [$from, $to])->get(['created_at', 'status', 'total']);
-        $monthly = true;
-        $groups = $orders->groupBy(fn ($order) => $order->created_at->format($monthly ? 'Y-m' : 'Y-m-d'));
+        $days = (int) $from->copy()->startOfDay()->diffInDays($to->copy()->startOfDay());
+        $granularity = $period === 'year' ? 'month' : ($days === 0 ? 'hour' : ($days <= 61 ? 'day' : 'month'));
+        $monthly = $granularity === 'month';
+        $groupLabel = ['hour' => 'giờ', 'day' => 'ngày', 'month' => 'tháng'][$granularity];
+        $keyFormat = ['hour' => 'Y-m-d H', 'day' => 'Y-m-d', 'month' => 'Y-m'][$granularity];
+        $groups = $orders->groupBy(fn ($order) => $order->created_at->format($keyFormat));
         $metric = $input['metric'] ?? 'sales';
         $points = [];
-        foreach (CarbonPeriod::create($monthly ? $from->copy()->startOfMonth() : $from, $monthly ? '1 month' : '1 day', $to) as $date) {
-            $rows = $groups->get($date->format($monthly ? 'Y-m' : 'Y-m-d'), collect());
-            $points[] = ['label' => $date->format('F'), 'tooltip_label' => $date->format('F Y'), 'value' => $metric === 'orders' ? $rows->count() : $rows->where('status', 'delivered')->sum('total')];
+        $start = $monthly ? $from->copy()->startOfMonth() : $from->copy();
+        foreach (CarbonPeriod::create($start, '1 '.$granularity, $to) as $date) {
+            $rows = $groups->get($date->format($keyFormat), collect());
+            $label = $date->format(['hour' => 'H:i', 'day' => 'd/m', 'month' => 'F'][$granularity]);
+            $tooltip = $date->format(['hour' => 'd/m/Y H:i', 'day' => 'd/m/Y', 'month' => 'F Y'][$granularity]);
+            $points[] = ['label' => $label, 'tooltip_label' => $tooltip, 'value' => $metric === 'orders' ? $rows->count() : $rows->where('status', 'delivered')->sum('total')];
         }
         $peak = max(1, max(array_column($points, 'value')));
         $step = pow(10, floor(log10($peak)));
@@ -48,7 +55,7 @@ class DashboardController extends Controller
         }
 
         return view('admin.dashboard', [
-            'from' => $from->toDateString(), 'to' => $to->toDateString(), 'period' => $period, 'metric' => $metric, 'monthly' => $monthly,
+            'from' => $from->toDateString(), 'to' => $to->toDateString(), 'period' => $period, 'metric' => $metric, 'monthly' => $monthly, 'granularity' => $granularity, 'groupLabel' => $groupLabel,
             'chartPoints' => $chartPoints, 'ceiling' => $ceiling,
             'sales' => $orders->where('status', 'delivered')->sum('total'),
         ]);

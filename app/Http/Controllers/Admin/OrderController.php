@@ -27,7 +27,7 @@ class OrderController extends Controller
 
     public function show(Request $request, Order $order): View
     {
-        $order->load(['items.product', 'user', 'events']);
+        $order->load(['items.product', 'user', 'events.actor']);
 
         return view($request->boolean('panel') ? 'admin.orders.detail' : 'admin.orders.show', compact('order'));
     }
