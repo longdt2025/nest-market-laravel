@@ -39,10 +39,13 @@ docker compose stop
 
 Khi lấy code mới:
 
-```powershell
+powershell
 git pull origin main
 powershell -ExecutionPolicy Bypass -File .\scripts\docker-setup.ps1
 ```
+
+```Lệnh check version laravel
+docker compose exec app php artisan --version
 
 Nếu cần bổ sung dữ liệu mẫu vào database có sẵn, chạy có chủ đích:
 
