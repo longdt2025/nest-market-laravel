@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Support\LoginPhone;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -28,7 +29,9 @@ class AuthController extends Controller
         $credentials = $request->validate(['email' => ['required', 'string', 'max:255'], 'password' => ['required', 'string']]);
         $login = trim($credentials['email']);
         unset($credentials['email']);
-        $credentials[filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username'] = $login;
+        $phone = LoginPhone::normalize($login);
+        $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : (preg_match('/^0[0-9]{9}$/D', $phone) ? 'login_phone' : 'username');
+        $credentials[$field] = $field === 'login_phone' ? $phone : $login;
         $credentials['is_active'] = true;
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             return back()->withErrors(['email' => 'Tài khoản hoặc mật khẩu không chính xác.'])->onlyInput('email');
@@ -47,11 +50,17 @@ class AuthController extends Controller
 
     public function register(Request $request): RedirectResponse
     {
+        if (is_string($request->input('phone'))) {
+            $request->merge(['phone' => LoginPhone::normalize($request->input('phone'))]);
+        }
         $data = $request->validate([
-            'name' => ['required', 'string', 'min:2', 'max:120'], 'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'name' => ['required', 'string', 'min:2', 'max:120'], 'email' => ['nullable', 'email', 'max:255', 'unique:users,email'],
+            'phone' => ['required', 'regex:/^0[0-9]{9}$/D', 'unique:users,login_phone'],
             'password' => ['required', 'confirmed', Password::min(8)->letters()->numbers()],
         ]);
-        $user = User::create(['name' => $data['name'], 'email' => $data['email'], 'password' => $data['password']]);
+        $user = new User(['name' => $data['name'], 'email' => $data['email'] ?? null, 'phone' => $data['phone'], 'password' => $data['password']]);
+        $user->login_phone = $data['phone'];
+        $user->save();
         Auth::login($user);
         $request->session()->regenerate();
         $request->session()->put('auth_stamp', ['id' => auth()->id(), 'hash' => auth()->user()->password, 'epoch' => Cache::get('auth_epoch', 'initial')]);

@@ -4,11 +4,12 @@
 <section class="container-wide interior-page account-page">
     <div class="interior-heading"><h1>Tài khoản <em>của tôi.</em></h1></div>
     <x-account-nav />
+    @if($customer->login_phone)<p><strong>Số điện thoại đăng nhập:</strong> {{ $customer->login_phone }}</p>@endif
     <div class="profile-layout">
         <form method="POST" action="{{ route('profile.update') }}" class="info-block form-stack">@csrf @method('PATCH')
             <h2>Hồ sơ & địa chỉ mặc định</h2>
             <label><span class="field-label">Tên tài khoản <span>*</span></span><input name="name" value="{{ old('name', $customer->name) }}" required minlength="2" maxlength="120" autocomplete="name"></label>
-            <label>Email đăng nhập<input type="email" value="{{ $customer->email }}" readonly aria-readonly="true"></label>
+            @if($customer->email)<label>Email<input type="email" value="{{ $customer->email }}" readonly aria-readonly="true"></label>@endif
             <div class="form-section-title"><x-icon name="truck" size="20"/><div><strong>Thông tin nhận hàng</strong><small>Tự điền ở trang thanh toán. Bạn vẫn có thể đổi riêng cho từng đơn.</small></div></div>
             <label>Tên người nhận mặc định<input name="delivery_name" value="{{ old('delivery_name', $customer->delivery_name ?? $customer->name) }}" minlength="2" maxlength="120" autocomplete="shipping name"></label>
             <label>Số điện thoại<input type="tel" name="phone" value="{{ old('phone', $customer->phone) }}" maxlength="20" autocomplete="shipping tel" placeholder="09xxxxxxxx"></label>

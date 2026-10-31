@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\PaymentSetting;
 use App\Support\ProductImages;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class PaymentSettingController extends Controller
@@ -19,7 +20,7 @@ class PaymentSettingController extends Controller
     {
         $setting = PaymentSetting::find(1);
         $data = $request->validate([
-            'bank_bin' => ['nullable', 'regex:/^[0-9]{6}$/D'],
+            'bank_bin' => ['nullable', 'regex:/^[0-9]{6}$/D', Rule::in(array_column(json_decode(file_get_contents(resource_path('data/vietqr-banks.json')), true, 512, JSON_THROW_ON_ERROR), 'bin'))],
             'enabled' => ['nullable', 'boolean'], 'bank_name' => ['required', 'string', 'max:120'],
             'account_number' => ['required', 'regex:/^[0-9A-Za-z -]{3,50}$/'],
             'account_holder' => ['required', 'string', 'max:120'],

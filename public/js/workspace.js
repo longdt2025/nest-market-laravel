@@ -28,3 +28,4 @@ document.querySelectorAll('[data-report-filter]').forEach(form=>{
         form.querySelector('[data-report-period]').value='custom';
     }));
 });
+(() => {const price=document.querySelector('input[name="price"]');const cost=document.querySelector('input[name="cost_price"]');if(!price||!cost)return;const note=document.createElement('small');note.className='text-warning';note.setAttribute('role','status');note.textContent='Giá bán đang thấp hơn giá vốn. Bạn vẫn có thể lưu nếu đây là giá khuyến mãi.';price.closest('label').append(note);const update=()=>{note.hidden=!(price.value!==''&&cost.value!==''&&Number(price.value)<Number(cost.value));};price.addEventListener('input',update);cost.addEventListener('input',update);update();})();

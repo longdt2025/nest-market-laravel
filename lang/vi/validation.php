@@ -2,6 +2,16 @@
 
 return [
     'required' => 'Vui lòng nhập :attribute.',
+    'numeric' => ':Attribute phải là số.',
+    'regex' => ':Attribute không đúng định dạng.',
+    'decimal' => ':Attribute chỉ được có từ :min đến :max chữ số thập phân.',
+    'dimensions' => ':Attribute vượt kích thước ảnh cho phép.',
+    'date_format' => ':Attribute phải đúng định dạng :format.',
+    'after_or_equal' => ':Attribute phải bằng hoặc sau :date.',
+    'different' => ':Attribute phải khác :other.',
+    'current_password' => 'Mật khẩu hiện tại không chính xác.',
+    'required_if' => 'Vui lòng nhập :attribute.',
+    'distinct' => ':Attribute bị trùng lặp.',
     'string' => ':Attribute phải là chuỗi ký tự.',
     'integer' => ':Attribute phải là số nguyên.',
     'array' => ':Attribute phải là danh sách hợp lệ.',
@@ -31,6 +41,10 @@ return [
         'numbers' => 'Mật khẩu phải có ít nhất một chữ số.',
     ],
     'attributes' => [
+        'sku' => 'mã sản phẩm', 'barcode' => 'barcode', 'unit' => 'đơn vị tính', 'cost_price' => 'giá vốn', 'vat_rate' => 'VAT',
+        'bank_name' => 'tên ngân hàng', 'bank_bin' => 'mã BIN ngân hàng', 'account_number' => 'số tài khoản', 'account_holder' => 'chủ tài khoản', 'qr' => 'ảnh QR',
+        'payment_method' => 'phương thức thanh toán', 'payment_status' => 'trạng thái thanh toán', 'payment_note' => 'ghi chú đối soát', 'current_password' => 'mật khẩu hiện tại',
+        'from' => 'ngày bắt đầu', 'to' => 'ngày kết thúc', 'gallery_images.*' => 'ảnh trong bộ ảnh', 'file' => 'tệp Excel', 'sheet' => 'sheet dữ liệu',
         'name' => 'tên', 'email' => 'email', 'password' => 'mật khẩu',
         'quantity' => 'số lượng', 'recipient_name' => 'họ tên người nhận',
         'phone' => 'số điện thoại', 'shipping_address' => 'địa chỉ giao hàng', 'note' => 'ghi chú',

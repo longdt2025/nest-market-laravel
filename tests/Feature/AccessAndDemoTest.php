@@ -36,7 +36,7 @@ class AccessAndDemoTest extends TestCase
     {
         $data = ['name' => 'Khách mới', 'email' => 'new@nest.test', 'password' => 'Password123',
             'password_confirmation' => 'Password123', 'role' => 'admin'];
-        $this->post(route('register.submit'), $data)->assertRedirect(route('shop.home'));
+        $this->post(route('register.submit'), $data + ['phone'=>'0912345678'])->assertRedirect(route('shop.home'));
         $user = User::where('email', $data['email'])->firstOrFail();
         $this->assertSame('customer', $user->role);
         $this->assertTrue(Hash::check($data['password'], $user->password));
